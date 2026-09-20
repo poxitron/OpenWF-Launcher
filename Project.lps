@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="12"/>
+    <BuildModes Active="Default"/>
+    <Units>
+      <Unit>
+        <Filename Value="Project.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="40" Y="14"/>
+        <UsageCount Value="115"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="Main.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <TopLine Value="806"/>
+        <CursorPos X="9" Y="828"/>
+        <UsageCount Value="115"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="MyFunctions.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="51" Y="25"/>
+        <UsageCount Value="85"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="procedures.pas"/>
+        <UnitName Value="Procedures"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="82" Y="10"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="server.pas"/>
+        <UnitName Value="Server"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="20" Y="8"/>
+        <UsageCount Value="31"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="Download.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="29" Y="14"/>
+        <UsageCount Value="31"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\..\..\..\Development\Lazarus\fpc\3.2.2\source\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="930"/>
+        <CursorPos X="14" Y="951"/>
+        <UsageCount Value="5"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\..\..\..\Development\Lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\filutilh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="179"/>
+        <CursorPos X="10" Y="200"/>
+        <UsageCount Value="5"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\OpenWF Launcher v2\Project.dproj"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="5"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit>
+      <Unit>
+        <Filename Value="TermVT.pas"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="18"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="UnTerminal.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="64" Y="9"/>
+        <UsageCount Value="18"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+    </Units>
+    <JumpHistory HistoryIndex="27">
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="878" Column="31" TopLine="855"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="93" Column="8" TopLine="73"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="396" Column="35" TopLine="387"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="403" Column="32" TopLine="387"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="404" Column="75" TopLine="387"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="412" Column="43" TopLine="387"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="444" Column="13" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="445" Column="52" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="446" Column="29" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="459" Column="84" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="470" Column="88" TopLine="437"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="758" Column="42" TopLine="725"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="515" Column="60" TopLine="493"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="758" Column="42" TopLine="725"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="872" Column="60" TopLine="847"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="874" Column="50" TopLine="847"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="877" Column="31" TopLine="847"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="93" Column="8" TopLine="73"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="396" Column="35" TopLine="384"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="404" Column="75" TopLine="384"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="412" Column="43" TopLine="384"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="444" Column="13" TopLine="441"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="446" Column="29" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="459" Column="84" TopLine="426"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="470" Column="88" TopLine="437"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="871" Column="21" TopLine="839"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="443" TopLine="416"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="719" Column="58" TopLine="697"/>
+      </Position>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>

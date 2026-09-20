@@ -5,15 +5,16 @@ unit Main;
 interface
 
 uses
-  LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics,
-  Controls, Forms, Dialogs, StdCtrls, ExtCtrls, ComCtrls, INIFiles,
-  laz2_DOM, laz2_XMLRead, laz2_XMLUtils, LazUTF8, FileUtil, LazFileUtils;
+  LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, INIFiles, laz2_DOM,
+  laz2_XMLRead, laz2_XMLUtils, LazUTF8, FileUtil, LazFileUtils;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
+    Button_MenuTest: TButton;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
     GroupBox3: TGroupBox;
@@ -29,8 +30,12 @@ type
     Button_InstalarActualizarServidor: TButton;
     Button_InstalarActualizarAplicaciones: TButton;
     Memo_Servidor: TMemo;
+    MenuItem_InstalarActualizarBootstrapper: TMenuItem;
+    MenuItem_InstalarActualizarServidor: TMenuItem;
+    MenuItem_InstalarActualizarAplicaciones: TMenuItem;
+    MenuItem_RecargarXml: TMenuItem;
+    PopupMenu_Test: TPopupMenu;
     StatusBar1: TStatusBar;
-    Button_Test: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject);
     procedure Button_IniciarJuegoClick(Sender: TObject);
@@ -41,7 +46,7 @@ type
     procedure Button_DetenerServidorClick(Sender: TObject);
     procedure Button_InstalarActualizarServidorClick(Sender: TObject);
     procedure Button_InstalarActualizarAplicacionesClick(Sender: TObject);
-    procedure Button_TestClick(Sender: TObject);
+    procedure Button_MenuTestClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -84,16 +89,20 @@ var
   GameNode: TDOMNode;
   ManifestNode: TDOMNode;
   TitleNode: TDOMNode;
+  VersionNode: TDOMNode;
   List_Instalado: TStringList;
   RutaEjecutable: String;
-  GitPath: string;
-  NodejsPath: string;
-  NpmCliPath: string;
-  MangoPath: string;
-  WgetPath: string;
-  BootstrapperPath: string;
-  ManifestID: string;
-  SelectedGameName: string;
+  GitPath: String;
+  NodejsPath: String;
+  NpmCliPath: String;
+  MangoPath: String;
+  WgetPath: String;
+  BootstrapperPath: String;
+  ManifestID: String;
+  SelectedGameName: String;
+  GameInstallPath: String;
+  GameDownloadDepot: String;
+  SpaceNinjaServerPath: String;
 
 implementation
 
@@ -102,26 +111,20 @@ uses
 {$R *.lfm}
 
 
-
-{TODO 5 -cGeneral :
-Guardar las URL de descargas en un archivo .ini por si en un futuro las cambian.
-Así se podrán editar y la aplicación seguirá funcionando}
-
-
-{TODO -cGeneral : Ver si puedo definir algunas variables como constantes.}
-{DONE -cDescargar :procedure DescargarBootstrapper:
-- Comprobar si el archivo se puede descargar de la web antes de iniciar la descarga.
-- Si se puede, iniciar la descarga.
-- Si no se puede, que muestre un mensaje.}
-{DONE -cDescargar :Al terminar la descarga del juego:
-- Comprobar si el Bootstrapper está descargado.
-- Descargarlo si fuera necesario.
-- Instalarlo.}
-{DONE -cDescargar : Al terminar la descarga del juego, dar la opción de eliminar los archivos temporales (carpeta 'depot')}
-{DONE -cGeneral : Desactivar todos los botones al iniciar un proceso (salvo el botón de cancelar el proceso)}
-{DONE -cJugar : Añadir el código para iniciar el juego}
-
-
+{#todo 5 -cGeneral : Guardar las URL de descargas en un archivo .ini
+- Si en un futuro cambian, se podrán editar y la aplicación seguirá funcionando.}
+{#todo 1 -cOptimización : Ver si puedo definir algunas variables como constantes.}
+{#todo 5 -cGeneral : Añadir comprobaciones:
+- Antes de descargar un acrhivo.
+- Comprobar que Warframe.x64.exe existe antes de iniciar Warframe.}
+ { #todo 4 -cGeneral : Añadir un Tbutton con un tbsDropDown para incluir:
+ - Instalar servidor, istalar Mango, recargar xml, etc.}
+ { #todo 4 -cGeneral : Añadir la versión de Warframe a los ComboBox y ordenarlos por versión }
+ { #todo -cGeneral : Descargar Git y Node.js al iniciar la aplicación para disminuir el tamaño de cara a su distribución }
+ { #todo -cOptimización : Mover los procedimientos a la unida 'Procedures' }
+ { #todo -cGeneral : Añadir la posibilidad de eliminar los juegos instalado. ¿Mostrarlos en una lista? }{ #todo -cGeneral : Guardar en un achivo .ini algunas opciones:
+- El último juego jugado
+- El Checkbox para borrar la caché }
 
 {----------------------------------------- Procedimientos ------------------------------------------
 ---------------------------------------------------------------------------------------------------}
@@ -162,6 +165,7 @@ begin
       if ManifestNode.TextContent = ManifestID then
       begin
         TitleNode := ManifestNode.NextSibling;
+        VersionNode := ManifestNode;
         Result := TitleNode.TextContent;
       end;
       ManifestNode := ManifestNode.NextSibling;
@@ -202,7 +206,7 @@ var
   WorkingDir: string;
 begin
   Parametros := Format('"%s"', [BootstrapperPath]);
-  WorkingDir := RutaEjecutable + '\nodejs\install\230411\' + ManifestID;
+  WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
 
   Form1.StatusBar1.SimpleText := 'Instalando el bootstrapper...';
 
@@ -224,7 +228,7 @@ var
   Parametros: string;
   WorkingDir: string;
 begin
-  if not DirectoryExists(RutaEjecutable + '\SpaceNinjaServer') then
+  if not DirectoryExists(SpaceNinjaServerPath) then
   begin
     { Instala el servidor si no está instalado }
     Parametros:= GitPath + ' clone https://openwf.io/SpaceNinjaServer.git';
@@ -247,7 +251,7 @@ begin
   else
   begin
     { Actualiza el servidor si ya estaba instalado }
-    WorkingDir := RutaEjecutable + '\SpaceNinjaServer';
+    WorkingDir := SpaceNinjaServerPath;
 
     Form1.Memo_Servidor.Lines.Add('||======== Actualizando el servidor ========||');
     Form1.StatusBar1.SimpleText := 'Actualizando el servidor...';
@@ -270,15 +274,17 @@ end;
 
 
 procedure CopiarArchivoConfigServidor;
-const
-  SourceFile = '\SpaceNinjaServer\config-vanilla.json';
-  DestFile = '\SpaceNinjaServer\config.json';
+var
+  SourceFile: String;
+  DestFile: String;
 begin
+  SourceFile := SpaceNinjaServerPath + '\config-vanilla.json';
+  DestFile := SpaceNinjaServerPath + '\config.json';
+
   if FileExists(RutaEjecutable + DestFile) then
     Exit;
-
   try
-    if not CopyFile(PChar(RutaEjecutable + SourceFile), PChar(RutaEjecutable + DestFile), false) then
+    if not CopyFile(PChar(SourceFile), PChar(DestFile), false) then
       raise Exception.Create('El archivo config-vanilla.json no existe.');
   except
     on E: Exception do
@@ -296,7 +302,7 @@ var
   WorkingDir: string;
 begin
   Parametros := Format('"%s" "%s" install --omit=dev --no-audit', [NodejsPath, NpmCliPath]);
-  WorkingDir := RutaEjecutable + '\SpaceNinjaServer';
+  WorkingDir := SpaceNinjaServerPath;
 
   Form1.Memo_Servidor.Lines.Add('');
   Form1.Memo_Servidor.Lines.Add('');
@@ -323,10 +329,10 @@ var
 begin
 
   { Actualiza los stripped assets si ya estaban instalados }
-  if DirectoryExists(RutaEjecutable + '\SpaceNinjaServer\static\data\stripped-assets') then
+  if DirectoryExists(SpaceNinjaServerPath + '\static\data\stripped-assets') then
   begin
     Parametros := Format('"%s" pull', [GitPath]);
-    WorkingDir := RutaEjecutable + '\SpaceNinjaServer\static\data\stripped-assets';
+    WorkingDir := SpaceNinjaServerPath + '\static\data\stripped-assets';
 
     Form1.Memo_Servidor.Lines.Add('');
     Form1.Memo_Servidor.Lines.Add('');
@@ -348,7 +354,7 @@ begin
   { Descarga los stripped assets si no están instalados }
   begin
     Parametros := Format('"%s" clone https://openwf.io/stripped-assets.git', [GitPath]);
-    WorkingDir := RutaEjecutable + '\SpaceNinjaServer\static\data';
+    WorkingDir := SpaceNinjaServerPath + '\static\data';
 
     Form1.Memo_Servidor.Lines.Add('');
     Form1.Memo_Servidor.Lines.Add('');
@@ -368,10 +374,10 @@ begin
   end;
 
   { Actualiza los stripped assets si ya estban instalados }
-  if DirectoryExists(RutaEjecutable + '\SpaceNinjaServer\static\data\0') then
+  if DirectoryExists(SpaceNinjaServerPath + '\static\data\0') then
   begin
     Parametros := Format('"%s" pull', [GitPath]);
-    WorkingDir := RutaEjecutable + '\SpaceNinjaServer\static\data\0\';
+    WorkingDir := SpaceNinjaServerPath + '\static\data\0\';
 
     Form1.Memo_Servidor.Lines.Add('');
     Form1.Memo_Servidor.Lines.Add('');
@@ -451,17 +457,16 @@ begin
   Button_InstalarActualizarAplicaciones.Caption := 'Instalar' + sLineBreak + 'Mango';
 
   { Inicializar las variables globales }
-  RutaEjecutable   := ExtractFileDir(Application.ExeName);
-
-  {TODO 5 -cGeneral : GitPath: Apaño temporal porque el git que está en RutaEjecutable no funciona.
-  Restaurar el original cuando se termine.}
-//  GitPath          := 'git.exe'; // apaño temporal porque el git que está en RutaEjecutable no funciona
-  GitPath          := RutaEjecutable + '\git\bin\git.exe';
-  NodejsPath       := RutaEjecutable + '\nodejs\node.exe';
-  NpmCliPath       := RutaEjecutable + '\nodejs\node_modules\npm\bin\npm-cli.js';
-  MangoPath        := RutaEjecutable + '\nodejs\node_modules\steam-manifest-tools\mango.js';
-  WgetPath         := RutaEjecutable + '\wget\wget.exe';
-  BootstrapperPath := RutaEjecutable + '\Bootstrapper Setup.exe';
+  RutaEjecutable       := ExtractFileDir(Application.ExeName);
+  GitPath              := RutaEjecutable + '\git\bin\git.exe';
+  NodejsPath           := RutaEjecutable + '\nodejs\node.exe';
+  NpmCliPath           := RutaEjecutable + '\nodejs\node_modules\npm\bin\npm-cli.js';
+  MangoPath            := RutaEjecutable + '\nodejs\node_modules\steam-manifest-tools\mango.js';
+  WgetPath             := RutaEjecutable + '\wget\wget.exe';
+  SpaceNinjaServerPath := RutaEjecutable + '\SpaceNinjaServer';
+  BootstrapperPath     := RutaEjecutable + '\Bootstrapper Setup.exe';
+  GameInstallPath      := '\nodejs\install\230411\';
+  GameDownloadDepot    := '\nodejs\depot\230411\';
 
   List_Instalado := TStringList.Create;
 
@@ -469,8 +474,8 @@ begin
     ReadXMLFile(XMLDocument1, UTF8ToSys(RutaEjecutable + '\manifest.xml'));
 
     { Obtiene el directorio completo de los juegos instalados y devuelve el nombre de la carpeta del juego }
-    for Path in FindAllDirectories(RutaEjecutable + '\nodejs\install\230411\', false) do
-      List_Instalado.Add(StringReplace(Path, RutaEjecutable + '\nodejs\install\230411\', '', [rfReplaceAll, rfIgnoreCase]));
+    for Path in FindAllDirectories(RutaEjecutable + GameInstallPath, false) do
+      List_Instalado.Add(StringReplace(Path, RutaEjecutable + GameInstallPath, '', [rfReplaceAll, rfIgnoreCase]));
 
     List_Instalado.CustomSort(StringListSortCompare); // Ordena la lista en sentido descendente
     ComboBox_Instalado.Items.Assign(List_Instalado);  // Asigna la lista ordenada al ComboBox_Instalado
@@ -520,7 +525,6 @@ begin
 end;
 
 
-
 //=====================//
 //    Iniciar Juego    //
 //=====================//
@@ -543,7 +547,7 @@ begin
   SelectedGameName := ComboBox_Instalado.Text;
   ManifestID := GetManifestBasedOnGameName(SelectedGameName);
 
-  if FileExists(RutaEjecutable + '\nodejs\install\230411\' + ManifestID + '\Warframe.x64.exe') then
+  if FileExists(RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe') then
   begin
     BThread.Start;
     AThread.Start;
@@ -690,8 +694,8 @@ begin
     try
       Sleep(3000); // Esperar unos segundos para que al servidor le de tiempo a iniciarse
 
-      Parametros := RutaEjecutable + '\nodejs\install\230411\' + ManifestID + '\Warframe.x64.exe';
-      WorkingDir := RutaEjecutable + '\nodejs\install\230411\' + ManifestID;
+      Parametros := RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe';
+      WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
 
       ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
     except
@@ -721,7 +725,7 @@ begin
       begin
         DescargarBootstrapper;
         { Comprueba si el juego está instalado }
-        if FileExists(RutaEjecutable + '\nodejs\install\230411\' + ManifestID + '\Warframe.x64.exe') then
+        if FileExists(RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe') then
           InstalarBootstrapper(ManifestID)
         else
           MessageDlg(SelectedGameName + ' no está instalado o la instalación no es correcta.' + sLineBreak + sLineBreak + 'Se ha cancelado la instalación del Bootstrapper.', mtError, [mbOK], 0);
@@ -761,7 +765,7 @@ begin
     if Form1.CheckBox_BorrarCache.Checked = true then
     begin
       Form1.StatusBar1.SimpleText := 'Elimiando la caché de archivos descargados...';
-      DeleteDirectoryRecursively(RutaEjecutable + '\nodejs\depot\230411');
+      DeleteDirectoryRecursively(RutaEjecutable + GameDownloadDepot);
       Form1.StatusBar1.SimpleText := '';
     end;
 	  
@@ -773,8 +777,8 @@ begin
     Form1.ComboBox_Instalado.Items.Clear;
 
     { Obtiene el directorio completo de los juegos instalados y devuelve el nombre de la carpeta del juego }
-    for Path in FindAllDirectories(RutaEjecutable + '\nodejs\install\230411\', false) do
-      List_Instalado.Add(StringReplace(Path, RutaEjecutable + '\nodejs\install\230411\', '', [rfReplaceAll, rfIgnoreCase]));
+    for Path in FindAllDirectories(RutaEjecutable + GameInstallPath, false) do
+      List_Instalado.Add(StringReplace(Path, RutaEjecutable + GameInstallPath, '', [rfReplaceAll, rfIgnoreCase]));
 
     List_Instalado.CustomSort(StringListSortCompare);
     Form1.ComboBox_Instalado.Items.Assign(List_Instalado);
@@ -822,7 +826,7 @@ begin
     Form1.Button_InstalarActualizarAplicaciones.Enabled := False;
 
     Parametros := Format('"%s" "%s" run raw', [NodejsPath, NpmCliPath]);
-    WorkingDir := RutaEjecutable + '\SpaceNinjaServer';
+    WorkingDir := SpaceNinjaServerPath;
 
     try
       //OpenURL('http://localhost');
@@ -889,17 +893,17 @@ end;
 
 
 
-procedure TForm1.Button_TestClick(Sender: TObject);
+procedure TForm1.Button_MenuTestClick(Sender: TObject);
 var
-  i: integer;
+  button: TControl;
+  lowerLeft: TPoint;
 begin
-  try
-    i := ExecNewProcess(WgetPath + ' --spider https://about.openwf.io/supplementals/Bootstrapper%20Setup.exe', 'C:\Juegos\Warframe\wget', Form1.Memo_Servidor);
-    ShowMessage(IntToStr(i));
-  // Devuelve 0 si tuvo éxito, 4 si no lo tuvo
-  except
-    on E: Exception do
-      Form1.Memo_Servidor.Lines.Add(E.Message);
+  if Sender is TControl then
+  begin
+    button := TControl(Sender);
+    lowerLeft := Point(0, button.Height);
+    lowerLeft := button.ClientToScreen(lowerLeft);
+    PopupMenu_Test.Popup(lowerLeft.X, lowerLeft.Y);
   end;
 end;
 

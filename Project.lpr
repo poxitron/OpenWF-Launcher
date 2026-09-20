@@ -4,7 +4,7 @@ program Project;
 
 uses
   Forms, Interfaces,
-  Main in 'Main.pas', MyFunctions;
+  Main in 'Main.pas', MyFunctions, Procedures;
 
 {$R *.res}
 

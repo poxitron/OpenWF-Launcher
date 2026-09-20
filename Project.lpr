@@ -9,6 +9,7 @@ uses
 {$R *.res}
 
 begin
+  Application.Scaled:=True;
   Application.Title:='OpenWF Launcher';
   Application.Initialize;
   Application.MainFormOnTaskbar := True;

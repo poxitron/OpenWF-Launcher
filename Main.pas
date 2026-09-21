@@ -113,18 +113,20 @@ uses
 
 {#todo 5 -cGeneral : Guardar las URL de descargas en un archivo .ini
 - Si en un futuro cambian, se podrán editar y la aplicación seguirá funcionando.}
+{ #todo -cGeneral : Guardar en un achivo .ini algunas opciones:
+- El último juego jugado
+- El Checkbox para borrar la caché }
 {#todo 1 -cOptimización : Ver si puedo definir algunas variables como constantes.}
 {#todo 5 -cGeneral : Añadir comprobaciones:
 - Antes de descargar un acrhivo.
 - Comprobar que Warframe.x64.exe existe antes de iniciar Warframe.}
- { #todo 4 -cGeneral : Añadir un Tbutton con un tbsDropDown para incluir:
+ { #todo 1 -cGeneral : Añadir un Tbutton con un tbsDropDown para incluir:
  - Instalar servidor, istalar Mango, recargar xml, etc.}
  { #todo 4 -cGeneral : Añadir la versión de Warframe a los ComboBox y ordenarlos por versión }
  { #todo -cGeneral : Descargar Git y Node.js al iniciar la aplicación para disminuir el tamaño de cara a su distribución }
  { #todo -cOptimización : Mover los procedimientos a la unida 'Procedures' }
- { #todo -cGeneral : Añadir la posibilidad de eliminar los juegos instalado. ¿Mostrarlos en una lista? }{ #todo -cGeneral : Guardar en un achivo .ini algunas opciones:
-- El último juego jugado
-- El Checkbox para borrar la caché }
+ { #todo -cGeneral : Añadir la posibilidad de eliminar los juegos instalado. ¿Mostrarlos en una lista? }
+
 
 {----------------------------------------- Procedimientos ------------------------------------------
 ---------------------------------------------------------------------------------------------------}
@@ -165,7 +167,7 @@ begin
       if ManifestNode.TextContent = ManifestID then
       begin
         TitleNode := ManifestNode.NextSibling;
-        VersionNode := ManifestNode;
+        //VersionNode := TitleNode.NextSibling;
         Result := TitleNode.TextContent;
       end;
       ManifestNode := ManifestNode.NextSibling;
@@ -173,7 +175,6 @@ begin
     GameNode := GameNode.NextSibling;
   end;
 end;
-
 
 procedure DescargarBootstrapper;
 var
@@ -478,15 +479,15 @@ begin
       List_Instalado.Add(StringReplace(Path, RutaEjecutable + GameInstallPath, '', [rfReplaceAll, rfIgnoreCase]));
 
     List_Instalado.CustomSort(StringListSortCompare); // Ordena la lista en sentido descendente
-    ComboBox_Instalado.Items.Assign(List_Instalado);  // Asigna la lista ordenada al ComboBox_Instalado
 
-    { Sustituye los items del ComboBox_Instalado con los nombres de los juegos si List_Instalado no está vacío }
+    { Por cada string que hay en el List_Instalado, reemplaza el nombre de la carpeta
+      por los títulos de los juegos }
     if List_Instalado.Count > 0 then
     begin
       for FolderName in List_Instalado do
       begin
         GameName := GetGameNameBasedOnManifest(FolderName);
-        ComboBox_Instalado.Items[List_Instalado.IndexOf(FolderName)] := GameName;
+        ComboBox_Instalado.Items.Add(GameName);
       end;
     end;
 
@@ -523,6 +524,7 @@ begin
     end;
   end;
 end;
+
 
 
 //=====================//
@@ -872,19 +874,17 @@ begin
     { Descarga Mango. Si la url no es accesible, muestra un mensje de error }
     i := ExecNewProcess(Format('"%s" "%s" install -g steam-manifest-tools', [NodejsPath, NpmCliPath]), RutaEjecutable + '\nodejs', Form1.Memo_Servidor);
     if i <> 0 then
-      MessageDlg('No se ha podido descargar Mango.', mtError, [mbOK], 0)
-    else
-    begin
-      DescargarActualizarMango;
+      MessageDlg('No se ha podido descargar Mango.', mtError, [mbOK], 0);
   // Descargar Git
   // Descargar Node.js
   // Descargar wget
-    end;
+    //end;
     for i := 0 to Form1.ComponentCount - 1 do // Descativa todos los botoones
       if Form1.Components[i] is TButton then
         (Form1.Components[i] as TButton).Enabled := True;
   end;
 end;
+
 
 
 
@@ -906,7 +906,6 @@ begin
     PopupMenu_Test.Popup(lowerLeft.X, lowerLeft.Y);
   end;
 end;
-
 
 
 

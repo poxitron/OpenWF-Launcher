@@ -99,10 +99,12 @@ var
   WgetPath: String;
   BootstrapperPath: String;
   ManifestID: String;
-  SelectedGameName: String;
+  SelectedGameTitle: String;
   GameInstallPath: String;
-  GameDownloadDepot: String;
+  GameDownloadCachePath: String;
   SpaceNinjaServerPath: String;
+  SpaceNinjaServerURL: String;
+  BootstrapperUrl: String;
 
 implementation
 
@@ -131,7 +133,10 @@ uses
 {----------------------------------------- Procedimientos ------------------------------------------
 ---------------------------------------------------------------------------------------------------}
 { Devuelve el manifest que corresponde con el nombre del juego seleccionado }
-function GetManifestBasedOnGameName(const GameName: String): String;
+function GetManifestBasedOnGameTitle(const GameTitle: String): String;
+var
+  GameNode: TDOMNode;
+  ManifestNode: TDOMNode;
 begin
   Result := '';
   GameNode := XMLDocument1.DocumentElement.FirstChild;
@@ -141,17 +146,15 @@ begin
     ManifestNode := GameNode.FirstChild;
     while Assigned(ManifestNode) do
     begin
-      if ManifestNode.TextContent = GameName then
+      if ManifestNode.TextContent = GameTitle then
       begin
-        TitleNode := ManifestNode.PreviousSibling;
-        Result := TitleNode.TextContent;
+        Result := ManifestNode.PreviousSibling.TextContent;
       end;
       ManifestNode := ManifestNode.NextSibling;
     end;
     GameNode := GameNode.NextSibling;
   end;
 end;
-
 
 { Devuelve el nombre del juego que corresponde con el manifest seleccionado }
 function GetGameNameBasedOnManifest(const ManifestID: String): String;
@@ -166,9 +169,7 @@ begin
     begin
       if ManifestNode.TextContent = ManifestID then
       begin
-        TitleNode := ManifestNode.NextSibling;
-        //VersionNode := TitleNode.NextSibling;
-        Result := TitleNode.TextContent;
+        Result := ManifestNode.NextSibling.TextContent;
       end;
       ManifestNode := ManifestNode.NextSibling;
     end;
@@ -176,53 +177,61 @@ begin
   end;
 end;
 
-procedure DescargarBootstrapper;
+procedure DescargarInstalarBootstrapper;
 var
-  DownloadUrl: string;
-  Parametros: string;
-  WorkingDir: string;
+  i: Integer;
+  b: Boolean;
+  Parametros: String;
+  WorkingDir: String;
 begin
-  DownloadUrl := 'https://about.openwf.io/supplementals/Bootstrapper%20Setup.exe';
-  Parametros := Format('"%s" "%s" -O "%s"', [WgetPath, DownloadUrl, 'Bootstrapper Setup.exe']);
-  WorkingDir := RutaEjecutable;
-
-  Form1.StatusBar1.SimpleText := 'Bootstrapper no encontrado. Descargando...';
 
   try
-    ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
-    Form1.StatusBar1.SimpleText := '';
+    { Comprueba si se puede descargar el Bootstrapper. Devuelve 0 si tuvo éxito, 4 si no lo tuvo }
+    i := ExecNewProcess(Format('"%s" --spider %s', [WgetPath, BootstrapperUrl]), RutaEjecutable, Form1.Memo_Servidor);
+    case i of
+      0 :
+        begin
+          Parametros := Format('"%s" "%s" -O "%s"', [WgetPath, BootstrapperUrl, 'Bootstrapper Setup.exe']);
+          WorkingDir := RutaEjecutable;
+
+          Form1.StatusBar1.SimpleText := 'Descargando el Bootstrapper...';
+          ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
+          Form1.StatusBar1.SimpleText := '';
+        end;
+      1..99 :
+        begin
+          MessageDlg('No se ha podido descargar el Bootstrapper.' + sLineBreak + 'Compruebe que la url sea accesible:' + sLineBreak + sLineBreak + 'https://about.openwf.io/supplementals/Bootstrapper Setup.exe', mtError, [mbOK], 0);
+        end;
+    end;
   except
     on E: Exception do
-    begin
-      MessageDlg('Error al descargar el bootstrapper: ' + E.Message, mtError, [mbOK], 0);
-      Form1.StatusBar1.SimpleText := '';
-    end;
+      MessageDlg('Ha ocurrido un error: ' + E.Message, mtError, [mbOK], 0);
   end;
-end;
-
-
-procedure InstalarBootstrapper(ManifestID: string);
-var
-  Parametros: string;
-  WorkingDir: string;
-begin
-  Parametros := Format('"%s"', [BootstrapperPath]);
-  WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
-
-  Form1.StatusBar1.SimpleText := 'Instalando el bootstrapper...';
 
   try
-    ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
-    Form1.StatusBar1.SimpleText := '';
+    { Comprueba si el juego está instalado }
+    b := FileExists(RutaEjecutable + '\Bootstrapper Setup.exe');
+    case b of
+      True :
+        begin
+          Parametros := Format('"%s"', [BootstrapperPath]);
+          WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
+
+          Form1.StatusBar1.SimpleText := 'Instalando el bootstrapper...';
+          ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
+          Form1.StatusBar1.SimpleText := '';
+        end;
+      False :
+        begin
+          MessageDlg('Error al instalar el bootstrapper.' + sLineBreak + 'El archivo "Bootstrapper Setup.exe" no está descargado.', mtError, [mbOK], 0);
+        end;
+    end;
   except
     on E: Exception do
-    begin
-      MessageDlg('Error al instalar el bootstrapper: ' + E.Message, mtError, [mbOK], 0);
-      Form1.StatusBar1.SimpleText := '';
-    end;
+      MessageDlg('Ha ocurrido un error: ' + E.Message, mtError, [mbOK], 0);
   end;
-end;
 
+end;
 
 procedure InstalarActualizarServidor;
 var
@@ -232,12 +241,11 @@ begin
   if not DirectoryExists(SpaceNinjaServerPath) then
   begin
     { Instala el servidor si no está instalado }
-    Parametros:= GitPath + ' clone https://openwf.io/SpaceNinjaServer.git';
+    Parametros:= GitPath + ' clone ' + SpaceNinjaServerURL;
     WorkingDir:= RutaEjecutable;
 
     Form1.Memo_Servidor.Lines.Add('||======== Instalando el servidor ========||');
     Form1.StatusBar1.SimpleText := 'Instalando el servidor...';
-
     try
       ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
       Form1.StatusBar1.SimpleText := '';
@@ -256,7 +264,6 @@ begin
 
     Form1.Memo_Servidor.Lines.Add('||======== Actualizando el servidor ========||');
     Form1.StatusBar1.SimpleText := 'Actualizando el servidor...';
-
     try
       ExecNewProcess(Format('"%s" fetch --prune', [GitPath]), WorkingDir, Form1.Memo_Servidor);
       ExecNewProcess(Format('"%s" restore package-lock.json', [GitPath]), WorkingDir, Form1.Memo_Servidor);
@@ -273,7 +280,6 @@ begin
   end;
 end;
 
-
 procedure CopiarArchivoConfigServidor;
 var
   SourceFile: String;
@@ -282,6 +288,8 @@ begin
   SourceFile := SpaceNinjaServerPath + '\config-vanilla.json';
   DestFile := SpaceNinjaServerPath + '\config.json';
 
+  { Si el archivo 'config.json' ya existe, sale del proceso para no reemplazarlo,
+     evitando que el usuario pierda la configuración que tenía }
   if FileExists(RutaEjecutable + DestFile) then
     Exit;
   try
@@ -296,7 +304,6 @@ begin
   end;
 end;
 
-
 procedure InstalarActualizarLibraryDependencies;
 var
   Parametros: string;
@@ -306,10 +313,8 @@ begin
   WorkingDir := SpaceNinjaServerPath;
 
   Form1.Memo_Servidor.Lines.Add('');
-  Form1.Memo_Servidor.Lines.Add('');
   Form1.Memo_Servidor.Lines.Add('||======== Descargando las dependencias del servidor ========||');
   Form1.StatusBar1.SimpleText := 'Descargando las dependencias del servidor...';
-
   try
     ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
     Form1.StatusBar1.SimpleText := '';
@@ -322,46 +327,20 @@ begin
   end;
 end;
 
-
 procedure DescargarActualizarStrippedAssets;
 var
   Parametros: string;
   WorkingDir: string;
 begin
-
-  { Actualiza los stripped assets si ya estaban instalados }
-  if DirectoryExists(SpaceNinjaServerPath + '\static\data\stripped-assets') then
-  begin
-    Parametros := Format('"%s" pull', [GitPath]);
-    WorkingDir := SpaceNinjaServerPath + '\static\data\stripped-assets';
-
-    Form1.Memo_Servidor.Lines.Add('');
-    Form1.Memo_Servidor.Lines.Add('');
-    Form1.Memo_Servidor.Lines.Add('||======== Actualizando los stripped assets ========||');
-    Form1.StatusBar1.SimpleText := 'Actualizando los stripped assets...';
-
-    try
-      ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
-      Form1.StatusBar1.SimpleText := '';
-    except
-      on E: Exception do
-      begin
-        MessageDlg('Error al actualizar los stripped assets: ' + E.Message, mtError, [mbOK], 0);
-        Form1.StatusBar1.SimpleText := '';
-      end;
-    end;
-  end
-  else
   { Descarga los stripped assets si no están instalados }
+  if not DirectoryExists(SpaceNinjaServerPath + '\static\data\stripped-assets') then
   begin
     Parametros := Format('"%s" clone https://openwf.io/stripped-assets.git', [GitPath]);
     WorkingDir := SpaceNinjaServerPath + '\static\data';
 
     Form1.Memo_Servidor.Lines.Add('');
-    Form1.Memo_Servidor.Lines.Add('');
     Form1.Memo_Servidor.Lines.Add('||======== Descargando los stripped assets ========||');
     Form1.StatusBar1.SimpleText := 'Descargando los stripped assets...';
-
     try
       ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
       Form1.StatusBar1.SimpleText := '';
@@ -369,6 +348,26 @@ begin
       on E: Exception do
       begin
         MessageDlg('Error al descargar los stripped assets: ' + E.Message, mtError, [mbOK], 0);
+        Form1.StatusBar1.SimpleText := '';
+      end;
+    end
+  end
+  else
+  { Actualiza los stripped assets si ya estaban instalados }
+  begin
+    Parametros := Format('"%s" pull', [GitPath]);
+    WorkingDir := SpaceNinjaServerPath + '\static\data\stripped-assets';
+
+    Form1.Memo_Servidor.Lines.Add('');
+    Form1.Memo_Servidor.Lines.Add('||======== Actualizando los stripped assets ========||');
+    Form1.StatusBar1.SimpleText := 'Actualizando los stripped assets...';
+    try
+      ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
+      Form1.StatusBar1.SimpleText := '';
+    except
+      on E: Exception do
+      begin
+        MessageDlg('Error al actualizar los stripped assets: ' + E.Message, mtError, [mbOK], 0);
         Form1.StatusBar1.SimpleText := '';
       end;
     end;
@@ -384,7 +383,6 @@ begin
     Form1.Memo_Servidor.Lines.Add('');
     Form1.Memo_Servidor.Lines.Add('||======== Actualizando los stripped assets ========||');
     Form1.StatusBar1.SimpleText := 'Actualizando los stripped assets...';
-
     try
       ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
       Form1.StatusBar1.SimpleText := '';
@@ -398,7 +396,6 @@ begin
   end;
 end;
 
-
 procedure DescargarActualizarMango;
 var
   Parametros: string;
@@ -407,9 +404,8 @@ begin
   Parametros := Format('"%s" "%s" install -g steam-manifest-tools', [NodejsPath, NpmCliPath]);
   WorkingDir := RutaEjecutable + '\nodejs';
 
-  //Form1.Memo_Servidor.Lines.Add('||======== Descargando Mango ========||');
+  Form1.Memo_Servidor.Lines.Add('||======== Descargando Mango ========||');
   Form1.StatusBar1.SimpleText := 'Descargando la última versión de Mango...';
-
   try
     ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
     Form1.StatusBar1.SimpleText := '';
@@ -422,20 +418,6 @@ begin
   end;
 end;
 
-//// Crea un archivo log
-//procedure SaveString(OutFilePath: string);
-//begin
-//  with TStringList.Create do try
-//     AddStrings(Form1.Memo_Servidor.lines);
-//     SaveToFile(OutFilePath);
-//   finally
-//     Free;
-//   end;
-//end;
-
-
-
-
 {----------------------------------- Fin de los procedimientos -------------------------------------
 ---------------------------------------------------------------------------------------------------}
 
@@ -444,7 +426,6 @@ begin
   FreeAndNil(XMLDocument1);
   List_Instalado.Free;
 end;
-
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
@@ -458,16 +439,19 @@ begin
   Button_InstalarActualizarAplicaciones.Caption := 'Instalar' + sLineBreak + 'Mango';
 
   { Inicializar las variables globales }
-  RutaEjecutable       := ExtractFileDir(Application.ExeName);
-  GitPath              := RutaEjecutable + '\git\bin\git.exe';
-  NodejsPath           := RutaEjecutable + '\nodejs\node.exe';
-  NpmCliPath           := RutaEjecutable + '\nodejs\node_modules\npm\bin\npm-cli.js';
-  MangoPath            := RutaEjecutable + '\nodejs\node_modules\steam-manifest-tools\mango.js';
-  WgetPath             := RutaEjecutable + '\wget\wget.exe';
-  SpaceNinjaServerPath := RutaEjecutable + '\SpaceNinjaServer';
-  BootstrapperPath     := RutaEjecutable + '\Bootstrapper Setup.exe';
-  GameInstallPath      := '\nodejs\install\230411\';
-  GameDownloadDepot    := '\nodejs\depot\230411\';
+  RutaEjecutable        := ExtractFileDir(Application.ExeName);
+  GitPath               := RutaEjecutable + '\git\bin\git.exe';
+  NodejsPath            := RutaEjecutable + '\nodejs\node.exe';
+  NpmCliPath            := RutaEjecutable + '\nodejs\node_modules\npm\bin\npm-cli.js';
+  MangoPath             := RutaEjecutable + '\nodejs\node_modules\steam-manifest-tools\mango.js';
+  WgetPath              := RutaEjecutable + '\wget\wget.exe';
+  SpaceNinjaServerPath  := RutaEjecutable + '\SpaceNinjaServer';
+  SpaceNinjaServerURL   := 'https://openwf.io/SpaceNinjaServer.git';
+  BootstrapperPath      := RutaEjecutable + '\Bootstrapper Setup.exe';
+  BootstrapperUrl       := 'https://about.openwf.io/supplementals/Bootstrapper%20Setup.exe';
+  GameInstallPath       := '\nodejs\install\230411\';
+  GameDownloadCachePath := '\nodejs\depot\230411\';
+
 
   List_Instalado := TStringList.Create;
 
@@ -527,6 +511,8 @@ end;
 
 
 
+
+
 //=====================//
 //    Iniciar Juego    //
 //=====================//
@@ -546,8 +532,8 @@ begin
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
-  SelectedGameName := ComboBox_Instalado.Text;
-  ManifestID := GetManifestBasedOnGameName(SelectedGameName);
+  SelectedGameTitle := ComboBox_Instalado.Text;
+  ManifestID := GetManifestBasedOnGameTitle(SelectedGameTitle);
 
   if FileExists(RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe') then
   begin
@@ -555,9 +541,8 @@ begin
     AThread.Start;
   end
   else
-    MessageDlg(Format('%s no está instalado o la instalación no es correcta.', [SelectedGameName]), mtError, [mbOK], 0);
+    MessageDlg(Format('%s no está instalado o la instalación no es correcta.', [SelectedGameTitle]), mtError, [mbOK], 0);
 end;
-
 
 procedure TForm1.Button_InstalarActualizarBootstrapperClick(Sender: TObject);
 var
@@ -569,8 +554,8 @@ begin
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
-  SelectedGameName := ComboBox_Instalado.Text;
-  ManifestID := GetManifestBasedOnGameName(SelectedGameName);
+  SelectedGameTitle := ComboBox_Instalado.Text;
+  ManifestID := GetManifestBasedOnGameTitle(SelectedGameTitle);
 
   AThread.Start;
 end;
@@ -589,7 +574,6 @@ begin
 
   AThread.Start;
 end;
-
 
 procedure TForm1.Button_RecargarXmlClick(Sender: TObject);
 begin
@@ -640,7 +624,6 @@ begin
   AThread.start;
 end;
 
-
 procedure TForm1.Button_DetenerServidorClick(Sender: TObject);
 begin
   try
@@ -662,7 +645,6 @@ begin
   AThread.Start;
 end;
 
-
 procedure TForm1.Button_InstalarActualizarAplicacionesClick(Sender: TObject);
 var
   AThread: ServidorThread;
@@ -680,31 +662,30 @@ end;
 ---------------------------------------------------------------------------------------------------}
 procedure JuegoThread.Execute;
 var
-  i: integer;
   Parametros: string;
   WorkingDir: string;
 begin
-  { Inicia el juego }
+  { Iniciar el juego }
   if FButtonClicked = Form1.Button_IniciarJuego then
   begin
+    Parametros := RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe';
+    WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
+
     Form1.Button_IniciarJuego.Enabled := False;
     Form1.Button_IniciarServidor.Enabled := False;
     Form1.Button_InstalarActualizarBootstrapper.Enabled := False;
     Form1.Button_DescargarJuego.Enabled := False;
     Form1.Button_RecargarXml.Enabled := False;
 
+    Sleep(3000); // Esperar unos segundos para que al servidor le de tiempo a iniciarse
     try
-      Sleep(3000); // Esperar unos segundos para que al servidor le de tiempo a iniciarse
-
-      Parametros := RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe';
-      WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
-
       ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
     except
       on E: Exception do
         MessageDlg('Error al iniciar el servidor: ' + E.Message, mtError, [mbOK], 0);
     end;
     StopProcess('node.exe');
+
     Form1.Button_IniciarJuego.Enabled := True;
     Form1.Button_IniciarServidor.Enabled := True;
     Form1.Button_InstalarActualizarBootstrapper.Enabled := True;
@@ -712,30 +693,16 @@ begin
     Form1.Button_RecargarXml.Enabled := True;
   end
   else
+  { Instalar / Actualizar el Bootstrapper }
   if FButtonClicked = Form1.Button_InstalarActualizarBootstrapper then
   begin
     Form1.Memo_Servidor.Clear;
+
     Form1.Button_InstalarActualizarBootstrapper.Enabled := False;
     Form1.Button_IniciarJuego.Enabled := False;
 
-    try
-      { Comprueba si la url es accesible. Devuelve 0 si tuvo éxito, 4 si no lo tuvo }
-      i := ExecNewProcess(Format('"%s" --spider "https://about.openwf.io/supplementals/Bootstrapper Setup.exe"', [WgetPath]), RutaEjecutable, Form1.Memo_Servidor);  // Comprueba si la url es accesible
-      if i <> 0 then
-        MessageDlg('No se ha podido descargar el Bootstrapper.' + sLineBreak + 'Compruebe que la url sea accesible:' + sLineBreak + sLineBreak + 'https://about.openwf.io/supplementals/Bootstrapper Setup.exe', mtError, [mbOK], 0)
-      else
-      begin
-        DescargarBootstrapper;
-        { Comprueba si el juego está instalado }
-        if FileExists(RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe') then
-          InstalarBootstrapper(ManifestID)
-        else
-          MessageDlg(SelectedGameName + ' no está instalado o la instalación no es correcta.' + sLineBreak + sLineBreak + 'Se ha cancelado la instalación del Bootstrapper.', mtError, [mbOK], 0);
-      end;
-    except
-      on E: Exception do
-        MessageDlg('Ha ocurrido un error: ' + E.Message, mtError, [mbOK], 0);
-    end;
+    DescargarInstalarBootstrapper;
+
     Form1.Button_InstalarActualizarBootstrapper.Enabled := True;
     Form1.Button_IniciarJuego.Enabled := True;
   end;
@@ -755,7 +722,7 @@ begin
   Form1.CheckBox_BorrarCache.Enabled := False;
   Form1.StatusBar1.SimpleText := 'Descargando ' + Form1.ComboBox_DisponibleParaDescargar.Text + '...';
 
-  ManifestID := GetManifestBasedOnGameName(Form1.ComboBox_DisponibleParaDescargar.Text);
+  ManifestID := GetManifestBasedOnGameTitle(Form1.ComboBox_DisponibleParaDescargar.Text);
   Parametros := Format('"%s" "%s" download-and-install 230411 %s',
                        [NodejsPath, MangoPath, ManifestID]);
   WorkingDir := RutaEjecutable + '\nodejs';
@@ -767,13 +734,14 @@ begin
     if Form1.CheckBox_BorrarCache.Checked = true then
     begin
       Form1.StatusBar1.SimpleText := 'Elimiando la caché de archivos descargados...';
-      DeleteDirectoryRecursively(RutaEjecutable + GameDownloadDepot);
+      DeleteDirectoryRecursively(RutaEjecutable + GameDownloadCachePath);
       Form1.StatusBar1.SimpleText := '';
     end;
 	  
     { Descarga e instala el bootstrapper }
-    DescargarBootstrapper;
-    InstalarBootstrapper(ManifestID);
+    DescargarInstalarBootstrapper;
+    //DescargarBootstrapper;
+    //InstalarBootstrapper(ManifestID);
 
     List_Instalado.Clear;
     Form1.ComboBox_Instalado.Items.Clear;

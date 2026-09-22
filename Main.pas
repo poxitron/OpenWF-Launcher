@@ -65,7 +65,7 @@ public
 end;
 
 
-DescargarJuegoThread = class(TThread)
+DescargasThread = class(TThread)
 protected
   procedure Execute; override;
 end;
@@ -132,6 +132,36 @@ uses
 
 {----------------------------------------- Procedimientos ------------------------------------------
 ---------------------------------------------------------------------------------------------------}
+
+{ Devuelve todos el valor de todos los nodos del manifes.xml que coinciden con NodeName
+  y los añade componente Dest}
+procedure GetXMLNodeValues(NodeName: string; const Dest: TStrings);
+
+  procedure SearchNode(Node: TDOMNode);
+  var
+    Child: TDOMNode;
+  begin
+    if Node = nil then
+      Exit;
+
+    if SameText(Node.NodeName, NodeName) then
+      Dest.Add(Node.TextContent);
+
+    Child := Node.FirstChild;
+    while Child <> nil do
+    begin
+      SearchNode(Child);
+      Child := Child.NextSibling;
+    end;
+  end;
+
+begin
+  SearchNode(XMLDocument1.DocumentElement);
+
+  { Ejemplo:
+    GetXMLNodeValues('title', Memo1.Lines);}
+end;
+
 { Devuelve el manifest que corresponde con el nombre del juego seleccionado }
 function GetManifestBasedOnGameTitle(const GameTitle: String): String;
 var
@@ -456,7 +486,7 @@ begin
   List_Instalado := TStringList.Create;
 
   try
-    ReadXMLFile(XMLDocument1, UTF8ToSys(RutaEjecutable + '\manifest.xml'));
+    ReadXMLFile(XMLDocument1, RutaEjecutable + '\manifest.xml');
 
     { Obtiene el directorio completo de los juegos instalados y devuelve el nombre de la carpeta del juego }
     for Path in FindAllDirectories(RutaEjecutable + GameInstallPath, false) do
@@ -465,7 +495,7 @@ begin
     List_Instalado.CustomSort(StringListSortCompare); // Ordena la lista en sentido descendente
 
     { Por cada string que hay en el List_Instalado, reemplaza el nombre de la carpeta
-      por los títulos de los juegos }
+      por los títulos de los juegos y los añade al ComboBox }
     if List_Instalado.Count > 0 then
     begin
       for FolderName in List_Instalado do
@@ -481,20 +511,7 @@ begin
         ComboBox_Instalado.ItemIndex := -1;
 
     { Añade al menú "Disponible para descargar" los juegos listados en el manifes.xml }
-    GameNode := XMLDocument1.DocumentElement.FirstChild;
-    while Assigned(GameNode) and (GameNode.NodeName = 'game') do
-    begin
-      ManifestNode := GameNode.FirstChild;
-      while Assigned(ManifestNode) do
-      begin
-        if ManifestNode.NodeName = 'title' then
-        begin
-          ComboBox_DisponibleParaDescargar.Items.Add(ManifestNode.TextContent);
-        end;
-        ManifestNode := ManifestNode.NextSibling;
-      end;
-      GameNode := GameNode.NextSibling;
-    end;
+    GetXMLNodeValues('title', ComboBox_DisponibleParaDescargar.Items);
 
     if ComboBox_DisponibleParaDescargar.Items.Count > 0 then
         ComboBox_DisponibleParaDescargar.ItemIndex := 0
@@ -567,9 +584,9 @@ end;
 //=================//
 procedure TForm1.Button_DescargarJuegoClick(Sender: TObject);
 var
-  AThread: DescargarJuegoThread;
+  AThread: DescargasThread;
 begin
-  AThread := DescargarJuegoThread.Create(True);
+  AThread := DescargasThread.Create(True);
   AThread.FreeOnTerminate := true;
 
   AThread.Start;
@@ -578,24 +595,11 @@ end;
 procedure TForm1.Button_RecargarXmlClick(Sender: TObject);
 begin
   try
-    ReadXMLFile(XMLDocument1, UTF8ToSys(RutaEjecutable + '\manifest.xml'));
+    ReadXMLFile(XMLDocument1, RutaEjecutable + '\manifest.xml');
     ComboBox_DisponibleParaDescargar.Items.Clear;
 
     { Añade al menú "Disponible para descargar" los juegos listados en el manifes.xml }
-    GameNode := XMLDocument1.DocumentElement.FirstChild;
-    while Assigned(GameNode) and (GameNode.NodeName = 'game') do
-    begin
-      ManifestNode := GameNode.FirstChild;
-      while Assigned(ManifestNode) do
-      begin
-        if ManifestNode.NodeName = 'title' then
-        begin
-          ComboBox_DisponibleParaDescargar.Items.Add(ManifestNode.TextContent);
-        end;
-        ManifestNode := ManifestNode.NextSibling;
-      end;
-      GameNode := GameNode.NextSibling;
-    end;
+    GetXMLNodeValues('title', ComboBox_DisponibleParaDescargar.Items);
 
     if ComboBox_DisponibleParaDescargar.Items.Count > 0 then
         ComboBox_DisponibleParaDescargar.ItemIndex := 0
@@ -709,7 +713,7 @@ begin
 end;
 
 
-procedure DescargarJuegoThread.Execute;
+procedure DescargasThread.Execute;
 var
   Parametros: string;
   WorkingDir: string;
@@ -852,11 +856,6 @@ begin
         (Form1.Components[i] as TButton).Enabled := True;
   end;
 end;
-
-
-
-
-
 
 
 

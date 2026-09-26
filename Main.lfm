@@ -173,18 +173,8 @@ object Form1: TForm1
       ParentFont = False
       ReadOnly = True
       ScrollBars = ssAutoBoth
-      TabOrder = 4
-      WordWrap = False
-    end
-    object Button_InstalarActualizarAplicaciones: TButton
-      Left = 448
-      Height = 41
-      Top = 144
-      Width = 75
-      Anchors = [akTop, akRight]
-      Caption = 'Instalar Mango'
       TabOrder = 3
-      OnClick = Button_InstalarActualizarAplicacionesClick
+      WordWrap = False
     end
   end
   object StatusBar1: TStatusBar
@@ -223,6 +213,7 @@ object Form1: TForm1
     end
     object MenuItem_InstalarActualizarServidor: TMenuItem
       Caption = 'Instalar/Actualizar el Servidor'
+      OnClick = MenuItem_InstalarActualizarServidorClick
     end
     object MenuItem_InstalarActualizarAplicaciones: TMenuItem
       Caption = 'Instalar/Actualizar Mango'

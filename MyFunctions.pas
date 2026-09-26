@@ -12,7 +12,7 @@ function ExecNewProcess(ProgramName: String; WorkingDir: String; Memo: TMemo): I
 function StopProcess(ExeFileName: string) : Integer;
 function AskAppToClose(const sCapt: PChar): boolean;  // Close applications by the window name
 function DeleteDirectoryRecursively(const ADirectory: String): Boolean; // Eliminar todos los archivos y carpetas de forma recursiva
-function StringListSortCompare(List: TStringList; Index1, Index2: Integer): Integer; // Sort the list in descending order
+function StringListDescendingSort(List: TStringList; Index1, Index2: Integer): Integer; // Sort the list in descending order
 procedure DrawRounded(Control: TWinControl);
 
 implementation
@@ -163,7 +163,7 @@ begin
   Result := DeleteDirectory(ADirectory, False);
 end;
 
-function StringListSortCompare(List: TStringList; Index1, Index2: Integer): Integer;
+function StringListDescendingSort(List: TStringList; Index1, Index2: Integer): Integer;
 begin
   Result := AnsiCompareText(List[Index2], List[Index1]);
 end;

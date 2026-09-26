@@ -90,12 +90,6 @@ var
   Form1: TForm1;
   INI: TINIFile;
   XMLDocument1: TXMLDocument;
-  //GameListNode: TDOMNode;
-  //GameNode: TDOMNode;
-  //ManifestNode: TDOMNode;
-  //TitleNode: TDOMNode;
-  //VersionNode: TDOMNode;
-  List_Instalado: TStringList;
   RutaEjecutable: String;
   GitPath: String;
   NodejsPath: String;
@@ -138,7 +132,6 @@ uses
 procedure TForm1.FormClose(Sender: TObject);
 begin
   FreeAndNil(XMLDocument1);
-  List_Instalado.Free;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -162,15 +155,9 @@ begin
   GameInstallPath       := '\nodejs\install\230411\';
   GameDownloadCachePath := '\nodejs\depot\230411\';
 
-
-  //List_Instalado := TStringList.Create;
-
   try
     ReadXMLFile(XMLDocument1, RutaEjecutable + '\manifest.xml');
-
-    { Obtiene el directorio completo de los juegos instalados y devuelve el nombre de la carpeta
-      del juego ordenada en sentido descendente }
-    AddInstalledGamesToComboBox(ComboBox_Instalado.Items);
+    AddInstalledGamesToComboBox(ComboBox_Instalado.Items, True);
 
     if Form1.ComboBox_Instalado.Items.Count > 0 then
         Form1.ComboBox_Instalado.ItemIndex := 0
@@ -403,9 +390,6 @@ procedure DescargasThread.Execute;
 var
   Parametros: string;
   WorkingDir: string;
-  Path: string;
-  FolderName: string;
-  GameName: string;
 begin
   Form1.Memo_Servidor.Clear;
   Form1.Button_DescargarJuego.Enabled := False;
@@ -414,8 +398,7 @@ begin
 
   ManifestID := GetBuildInfo(Form1.ComboBox_DisponibleParaDescargar.text, 'manifest', XMLDocument1);
 
-  Parametros := Format('"%s" "%s" download-and-install 230411 %s',
-                       [NodejsPath, MangoPath, ManifestID]);
+  Parametros := Format('"%s" "%s" download-and-install 230411 %s', [NodejsPath, MangoPath, ManifestID]);
   WorkingDir := RutaEjecutable + '\nodejs';
 
   { Descarga el juego seleccionado }
@@ -434,25 +417,8 @@ begin
     //DescargarBootstrapper;
     //InstalarBootstrapper(ManifestID);
 
-    List_Instalado.Clear;
     Form1.ComboBox_Instalado.Items.Clear;
-
-    { Obtiene el directorio completo de los juegos instalados y devuelve el nombre de la carpeta del juego }
-    for Path in FindAllDirectories(RutaEjecutable + GameInstallPath, false) do
-      List_Instalado.Add(StringReplace(Path, RutaEjecutable + GameInstallPath, '', [rfReplaceAll, rfIgnoreCase]));
-
-    List_Instalado.CustomSort(StringListSortCompare);
-    Form1.ComboBox_Instalado.Items.Assign(List_Instalado);
-
-    { Sustituye los items del ComboBox_Instalado con los nombres de los juegos si List_Instalado no está vacío }
-    if List_Instalado.Count > 0 then
-    begin
-      for FolderName in List_Instalado do
-      begin
-        GameName := GetBuildInfo(FolderName, 'title', XMLDocument1);
-        Form1.ComboBox_Instalado.Items[List_Instalado.IndexOf(FolderName)] := GameName;
-      end;
-    end;
+    AddInstalledGamesToComboBox(Form1.ComboBox_Instalado.Items, True);
 
     if Form1.ComboBox_Instalado.Items.Count > 0 then
         Form1.ComboBox_Instalado.ItemIndex := 0
@@ -511,7 +477,6 @@ begin
         (Form1.Components[i] as TButton).Enabled := False;
 
     InstalarActualizarServidor;
-    CopiarArchivoConfigServidor;
     InstalarActualizarLibraryDependencies;
     DescargarActualizarStrippedAssets;
 

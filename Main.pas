@@ -20,36 +20,31 @@ type
     GroupBox3: TGroupBox;
     ComboBox_Instalado: TComboBox;
     Button_IniciarJuego: TButton;
-    Button_InstalarActualizarBootstrapper: TButton;
     ComboBox_DisponibleParaDescargar: TComboBox;
     Button_DescargarJuego: TButton;
-    Button_RecargarXml: TButton;
     CheckBox_BorrarCache: TCheckBox;
     Button_IniciarServidor: TButton;
     Button_DetenerServidor: TButton;
-    Button_InstalarActualizarServidor: TButton;
-    Button_InstalarActualizarAplicaciones: TButton;
     Memo_Servidor: TMemo;
     MenuItem_InstalarActualizarBootstrapper: TMenuItem;
     MenuItem_InstalarActualizarServidor: TMenuItem;
     MenuItem_InstalarActualizarAplicaciones: TMenuItem;
     MenuItem_RecargarXml: TMenuItem;
-    PopupMenu_Test: TPopupMenu;
+    PopupMenu: TPopupMenu;
     Separator1: TMenuItem;
     Separator2: TMenuItem;
     StatusBar1: TStatusBar;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject);
     procedure Button_IniciarJuegoClick(Sender: TObject);
-    procedure Button_InstalarActualizarBootstrapperClick(Sender: TObject);
     procedure Button_DescargarJuegoClick(Sender: TObject);
-    procedure Button_RecargarXmlClick(Sender: TObject);
     procedure Button_IniciarServidorClick(Sender: TObject);
     procedure Button_DetenerServidorClick(Sender: TObject);
-    procedure Button_InstalarActualizarServidorClick(Sender: TObject);
-    procedure Button_InstalarActualizarAplicacionesClick(Sender: TObject);
     procedure Button_MenuTestClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarAplicacionesClick(Sender: TObject);
+    procedure MenuItem_InstalarActualizarBootstrapperClick(Sender: TObject);
+    procedure MenuItem_InstalarActualizarServidorClick(Sender: TObject);
+    procedure MenuItem_RecargarXmlClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -61,10 +56,12 @@ type
 JuegoThread = class(TThread)
 private
   FButtonClicked: TButton;
+  FMenuItemClicked: TMenuItem;
 protected
   procedure Execute; override;
 public
   property WhatButtonWasClicked: TButton read FButtonClicked write FButtonClicked;
+  property WhatMenuItemWasClicked: TMenuItem read FMenuItemClicked write FMenuItemClicked;
 end;
 
 
@@ -137,9 +134,6 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Application.HintPause := 1000;  // Modifica los segundos que tarda en aparecer el hint al poner el ratón sobre un botón
-  Button_InstalarActualizarBootstrapper.Caption := 'Instalar' + sLineBreak + 'Bootstrapper';
-  Button_InstalarActualizarServidor.Caption := 'Instalar' + sLineBreak + 'Servidor';
-  Button_InstalarActualizarAplicaciones.Caption := 'Instalar' + sLineBreak + 'Mango';
 
   { Inicializar las variables globales }
   RutaEjecutable        := ExtractFileDir(Application.ExeName);
@@ -189,7 +183,7 @@ begin
     button := TControl(Sender);
     lowerLeft := Point(0, button.Height);
     lowerLeft := button.ClientToScreen(lowerLeft);
-    PopupMenu_Test.Popup(lowerLeft.X, lowerLeft.Y);
+    PopupMenu.Popup(lowerLeft.X, lowerLeft.Y);
   end;
 end;
 
@@ -225,13 +219,13 @@ begin
     MessageDlg(Format('%s no está instalado o la instalación no es correcta.', [ComboBox_Instalado.Text]), mtError, [mbOK], 0);
 end;
 
-procedure TForm1.Button_InstalarActualizarBootstrapperClick(Sender: TObject);
+procedure TForm1.MenuItem_InstalarActualizarBootstrapperClick(Sender: TObject);
 var
   AThread: JuegoThread;
 begin
   AThread := JuegoThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.WhatButtonWasClicked := Sender as TButton; // "Envía" una señal al Thread para saber
+  AThread.WhatMenuItemWasClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
@@ -239,7 +233,6 @@ begin
 
   AThread.Start;
 end;
-
 
 
 //=================//
@@ -255,7 +248,7 @@ begin
   AThread.Start;
 end;
 
-procedure TForm1.Button_RecargarXmlClick(Sender: TObject);
+procedure TForm1.MenuItem_RecargarXmlClick(Sender: TObject);
 begin
   try
     ReadXMLFile(XMLDocument1, RutaEjecutable + '\manifest.xml');
@@ -274,7 +267,6 @@ begin
         MessageDlg('Error al recargar el archivo manifest.xml: ' + E.Message, mtError, [mbOK], 0);
   end;
 end;
-
 
 
 //====================//
@@ -301,24 +293,13 @@ begin
     end;
 end;
 
-procedure TForm1.Button_InstalarActualizarServidorClick(Sender: TObject);
+procedure TForm1.MenuItem_InstalarActualizarServidorClick(Sender: TObject);
 var
   AThread: ServidorThread;
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := True;
-  AThread.WhatButtonWasClicked := Sender as TButton; // "Envía" una señal al Thread para saber
-                                                     // que se ha iniciado con este botón
-  AThread.Start;
-end;
-
-procedure TForm1.Button_InstalarActualizarAplicacionesClick(Sender: TObject);
-var
-  AThread: ServidorThread;
-begin
-  AThread := ServidorThread.Create(True);
-  AThread.FreeOnTerminate := true;
-  AThread.WhatButtonWasClicked := Sender as TButton; // "Envía" una señal al Thread para saber
+  AThread.WhatMenuItemWasClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.Start;
 end;
@@ -336,6 +317,9 @@ end;
 
 
 
+
+
+
 {-------------------------------------------- Threads ----------------------------------------------
 ---------------------------------------------------------------------------------------------------}
 procedure JuegoThread.Execute;
@@ -349,11 +333,10 @@ begin
     Parametros := RutaEjecutable + GameInstallPath + ManifestID + '\Warframe.x64.exe';
     WorkingDir := RutaEjecutable + GameInstallPath + ManifestID;
 
+    Form1.Button_MenuTest.Enabled := False;
     Form1.Button_IniciarJuego.Enabled := False;
     Form1.Button_IniciarServidor.Enabled := False;
-    Form1.Button_InstalarActualizarBootstrapper.Enabled := False;
     Form1.Button_DescargarJuego.Enabled := False;
-    Form1.Button_RecargarXml.Enabled := False;
 
     Sleep(3000); // Esperar unos segundos para que al servidor le de tiempo a iniciarse
     try
@@ -364,24 +347,23 @@ begin
     end;
     StopProcess('node.exe');
 
+    Form1.Button_MenuTest.Enabled := True;
     Form1.Button_IniciarJuego.Enabled := True;
     Form1.Button_IniciarServidor.Enabled := True;
-    Form1.Button_InstalarActualizarBootstrapper.Enabled := True;
     Form1.Button_DescargarJuego.Enabled := True;
-    Form1.Button_RecargarXml.Enabled := True;
   end
   else
   { Instalar / Actualizar el Bootstrapper }
-  if FButtonClicked = Form1.Button_InstalarActualizarBootstrapper then
+  if FMenuItemClicked = Form1.MenuItem_InstalarActualizarBootstrapper then
   begin
     Form1.Memo_Servidor.Clear;
 
-    Form1.Button_InstalarActualizarBootstrapper.Enabled := False;
+    Form1.Button_MenuTest.Enabled := False;
     Form1.Button_IniciarJuego.Enabled := False;
 
     DescargarInstalarBootstrapper;
 
-    Form1.Button_InstalarActualizarBootstrapper.Enabled := True;
+    Form1.Button_MenuTest.Enabled := True;
     Form1.Button_IniciarJuego.Enabled := True;
   end;
 end;
@@ -446,10 +428,10 @@ begin
   if (FButtonClicked = Form1.Button_IniciarServidor) or (FButtonClicked = Form1.Button_IniciarJuego) then
   begin
     Form1.Memo_Servidor.Clear;
+
+    Form1.Button_MenuTest.Enabled := False;
     Form1.Button_IniciarServidor.Enabled := False;
     Form1.Button_DetenerServidor.Enabled := True;
-    Form1.Button_InstalarActualizarServidor.Enabled := False;
-    Form1.Button_InstalarActualizarAplicaciones.Enabled := False;
 
     Parametros := Format('"%s" "%s" run raw', [NodejsPath, NpmCliPath]);
     WorkingDir := SpaceNinjaServerPath;
@@ -461,14 +443,15 @@ begin
       on E: Exception do
         MessageDlg('Error al iniciar el servidor: ' + E.Message, mtError, [mbOK], 0);
     end;
+
+    Form1.Button_MenuTest.Enabled := True;
     Form1.Button_IniciarServidor.Enabled := True;
     Form1.Button_DetenerServidor.Enabled := False;
-    Form1.Button_InstalarActualizarServidor.Enabled := True;
-    Form1.Button_InstalarActualizarAplicaciones.Enabled := True;
+
   end
   else
   { Instalar / Actualizar servidor }
-  if FButtonClicked = Form1.Button_InstalarActualizarServidor then
+  if FMenuItemClicked = Form1.MenuItem_InstalarActualizarServidor then
   begin
     Form1.Memo_Servidor.Clear;
 
@@ -486,7 +469,6 @@ begin
   end
   else
   { Instalar / Actualizar aplicaciones }
-  //if FButtonClickedA = Form1.Button_InstalarActualizarAplicaciones then
   if FMenuItemClicked = Form1.MenuItem_InstalarActualizarAplicaciones then
   begin
     Form1.Memo_Servidor.Clear;

@@ -26,6 +26,7 @@ type
     Button_DescargarJuego: TButton;
     CheckBox_BorrarCache: TCheckBox;
     Memo_Servidor: TMemo;
+    MenuItem_DesinstalarJuego: TMenuItem;
     MenuItem_InstalarActualizarBootstrapper: TMenuItem;
     MenuItem_InstalarActualizarServidor: TMenuItem;
     MenuItem_InstalarActualizarAplicaciones: TMenuItem;
@@ -43,6 +44,7 @@ type
     //procedure Button_IniciarServidorClick(Sender: TObject);
     //procedure Button_DetenerServidorClick(Sender: TObject);
     procedure Button_MenuTestClick(Sender: TObject);
+    procedure MenuItem_DesinstalarJuegoClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarAplicacionesClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarBootstrapperClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarServidorClick(Sender: TObject);
@@ -112,6 +114,7 @@ uses
 {$R *.lfm}
 
 
+{ #todo 5 -cGeneral : Mover "procedure TForm1.MenuItem_DesinstalarJuegoClick" al hilo JuegoThread }
 { #todo 5 -cGeneral : Guardar las URL de descargas en un archivo .ini
 - Si en un futuro cambian, se podrán editar y la aplicación seguirá funcionando.}
 { #todo -cGeneral : Guardar en un achivo .ini algunas opciones:
@@ -121,14 +124,15 @@ uses
 { #todo 5 -cGeneral : Añadir comprobaciones:
 - Antes de descargar un acrhivo.
 - Comprobar que Warframe.x64.exe existe antes de iniciar Warframe.}
- { #todo 1 -cGeneral : Añadir al tbsDropDown os hint}
- { #done 1 -cGeneral : Añadir un Tbutton con un tbsDropDown para incluir:
- - Instalar servidor, istalar Mango, recargar xml, etc.}
- { #todo 4 -cGeneral : Añadir la versión de Warframe a los ComboBox y ordenarlos por versión }
- { #todo -cGeneral : Descargar Git y Node.js al iniciar la aplicación para disminuir el tamaño de cara a su distribución }
- { #todo -cOptimización : Mover los procedimientos a la unida 'Procedures' }
- { #todo -cGeneral : Añadir la posibilidad de eliminar los juegos instalado. ¿Mostrarlos en una lista? }
+ { #todo 1 -cGeneral : Añadir al tbsDropDown los hint}
 
+ { #todo 2 -cGeneral : ¿Añadir la versión de Warframe a los ComboBox y ordenarlos por versión? }
+ { #todo -cGeneral : Descargar Git y Node.js al iniciar la aplicación para disminuir el tamaño de cara a su distribución }
+
+ { #done -cGeneral : Añadir la posibilidad de eliminar los juegos instalado. }
+ { #done -cOptimización : Mover los procedimientos a la unida 'Procedures' }
+ { #done 1 -cGeneral : Añadir un Tbutton con un tbsDropDown para incluir:
+ - Instalar servidor, instalar Mango, recargar xml, etc.}
 
 procedure TForm1.FormClose(Sender: TObject);
 begin
@@ -193,6 +197,7 @@ end;
 
 
 
+
 //=====================//
 //    Iniciar Juego    //
 //=====================//
@@ -238,6 +243,29 @@ begin
   AThread.Start;
 end;
 
+procedure TForm1.MenuItem_DesinstalarJuegoClick(Sender: TObject);
+var
+  s: String;
+begin
+  Button_IniciarJuego.Enabled := False;
+  Button_DescargarJuego.Enabled := False;
+  try
+    s := GetBuildInfo(ComboBox_Instalado.Text, 'manifest', XMLDocument1);
+    DeleteDirectoryRecursively(RutaEjecutable + GameInstallPath + s);
+
+    ComboBox_Instalado.Clear;
+    AddInstalledGamesToComboBox(ComboBox_Instalado.Items, True);
+
+    if ComboBox_DisponibleParaDescargar.Items.Count > 0 then
+        ComboBox_DisponibleParaDescargar.ItemIndex := 0
+      else
+        ComboBox_DisponibleParaDescargar.ItemIndex := -1;
+  finally
+  end;
+  Button_IniciarJuego.Enabled := True;
+  Button_DescargarJuego.Enabled := True;
+end;
+
 
 //=================//
 //    Descargas    //
@@ -276,26 +304,6 @@ end;
 //====================//
 //      Servidor      //
 //====================//
-//procedure TForm1.Button_IniciarServidorClick(Sender: TObject);
-//var
-//  AThread: ServidorThread;
-//begin
-//  AThread := ServidorThread.Create(True);
-//  AThread.FreeOnTerminate := true;
-//  AThread.ButtonClickedSignal := Sender as TButton; // "Envía" una señal al Thread para saber
-//                                                     // que se ha iniciado con este botón
-//  AThread.start;
-//end;
-//
-//procedure TForm1.Button_DetenerServidorClick(Sender: TObject);
-//begin
-//  try
-//    StopProcess('node.exe');
-//    except
-//      on E: Exception do
-//        ShowMessage('No ha sido posible detener el proceso: ' + E.Message);
-//    end;
-//end;
 procedure TForm1.BitBtn_IniciarServidorClick(Sender: TObject);
 var
   AThread: ServidorThread;
@@ -348,6 +356,7 @@ procedure JuegoThread.Execute;
 var
   Parametros: string;
   WorkingDir: string;
+  s: String;
 begin
   { Iniciar el juego }
   if FButtonClicked = Form1.Button_IniciarJuego then
@@ -357,7 +366,6 @@ begin
 
     Form1.Button_MenuTest.Enabled := False;
     Form1.Button_IniciarJuego.Enabled := False;
-    //Form1.Button_IniciarServidor.Enabled := False;
     Form1.Button_DescargarJuego.Enabled := False;
 
     Sleep(3000); // Esperar unos segundos para que al servidor le de tiempo a iniciarse
@@ -371,10 +379,9 @@ begin
 
     Form1.Button_MenuTest.Enabled := True;
     Form1.Button_IniciarJuego.Enabled := True;
-    //Form1.Button_IniciarServidor.Enabled := True;
     Form1.Button_DescargarJuego.Enabled := True;
-  end
-  else
+  end;
+
   { Instalar / Actualizar el Bootstrapper }
   if FMenuItemClicked = Form1.MenuItem_InstalarActualizarBootstrapper then
   begin
@@ -388,6 +395,26 @@ begin
     Form1.Button_MenuTest.Enabled := True;
     Form1.Button_IniciarJuego.Enabled := True;
   end;
+
+  if FMenuItemClicked = Form1.MenuItem_DesinstalarJuego then
+  begin
+    Form1.Button_IniciarJuego.Enabled := False;
+    Form1.Button_DescargarJuego.Enabled := False;
+
+    s := GetBuildInfo(Form1.ComboBox_Instalado.Text, 'manifest', XMLDocument1);
+    DeleteDirectoryRecursively(RutaEjecutable + GameInstallPath + s);
+
+    Form1.ComboBox_Instalado.Clear;
+    AddInstalledGamesToComboBox(Form1.ComboBox_Instalado.Items, True);
+
+     if Form1.ComboBox_DisponibleParaDescargar.Items.Count > 0 then
+        Form1.ComboBox_DisponibleParaDescargar.ItemIndex := 0
+      else
+        Form1.ComboBox_DisponibleParaDescargar.ItemIndex := -1;
+
+    Form1.Button_IniciarJuego.Enabled := True;
+    Form1.Button_DescargarJuego.Enabled := True;
+  end;
 end;
 
 procedure DescargasThread.Execute;
@@ -397,6 +424,8 @@ var
 begin
   Form1.Memo_Servidor.Clear;
   Form1.Button_DescargarJuego.Enabled := False;
+  Form1.MenuItem_InstalarActualizarAplicaciones.Enabled := False;
+
   Form1.CheckBox_BorrarCache.Enabled := False;
   Form1.StatusBar1.SimpleText := 'Descargando ' + Form1.ComboBox_DisponibleParaDescargar.Text + '...';
 
@@ -409,6 +438,7 @@ begin
   try
     ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
     Form1.StatusBar1.SimpleText := '';
+
     if Form1.CheckBox_BorrarCache.Checked = true then
     begin
       Form1.StatusBar1.SimpleText := 'Elimiando la caché de archivos descargados...';
@@ -438,6 +468,7 @@ begin
     end;
     Form1.Button_DescargarJuego.Enabled := True;
     Form1.CheckBox_BorrarCache.Enabled := True;
+    Form1.MenuItem_InstalarActualizarAplicaciones.Enabled := True;
 end;
 
 procedure ServidorThread.Execute;
@@ -454,6 +485,8 @@ begin
     //Form1.Button_MenuTest.Enabled := False;
     Form1.BitBtn_IniciarServidor.Enabled := False;
     Form1.BitBtn_DetenerServidor.Enabled := True;
+    Form1.MenuItem_InstalarActualizarServidor.Enabled := False;
+    Form1.MenuItem_InstalarActualizarAplicaciones.Enabled := False;
 
     Parametros := Format('"%s" "%s" run raw', [NodejsPath, NpmCliPath]);
     WorkingDir := SpaceNinjaServerPath;
@@ -469,9 +502,10 @@ begin
     //Form1.Button_MenuTest.Enabled := True;
     Form1.BitBtn_IniciarServidor.Enabled := True;
     Form1.BitBtn_DetenerServidor.Enabled := False;
+    Form1.MenuItem_InstalarActualizarServidor.Enabled := True;
+    Form1.MenuItem_InstalarActualizarAplicaciones.Enabled := True;
+  end;
 
-  end
-  else
   { Instalar / Actualizar servidor }
   if FMenuItemClicked = Form1.MenuItem_InstalarActualizarServidor then
   begin
@@ -488,8 +522,8 @@ begin
     for i := 0 to Form1.ComponentCount - 1 do // Activa todos los botones
       if Form1.Components[i] is TButton then
         (Form1.Components[i] as TButton).Enabled := True;
-  end
-  else
+  end;
+
   { Instalar / Actualizar aplicaciones }
   if FMenuItemClicked = Form1.MenuItem_InstalarActualizarAplicaciones then
   begin

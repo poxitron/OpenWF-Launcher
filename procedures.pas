@@ -28,7 +28,6 @@ var
   Parametros: String;
   WorkingDir: String;
 begin
-
   try
     { Comprueba si se puede descargar el Bootstrapper. Devuelve 0 si tuvo éxito, 4 si no lo tuvo }
     i := ExecNewProcess(Format('"%s" --spider %s', [WgetPath, BootstrapperUrl]), RutaEjecutable, Form1.Memo_Servidor);

@@ -10,7 +10,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="11"/>
-        <UsageCount Value="182"/>
+        <UsageCount Value="185"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -20,9 +20,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="169"/>
-        <CursorPos Y="343"/>
-        <UsageCount Value="182"/>
+        <TopLine Value="380"/>
+        <CursorPos X="11" Y="415"/>
+        <FoldState Value=" T3k6030131612 PmJoa0i"/>
+        <UsageCount Value="185"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -31,8 +32,9 @@
         <Filename Value="MyFunctions.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
-        <CursorPos Y="34"/>
-        <UsageCount Value="152"/>
+        <CursorPos Y="21"/>
+        <FoldState Value=" T3K0l312 PjOkL0D"/>
+        <UsageCount Value="155"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
@@ -40,9 +42,10 @@
         <Filename Value="Procedures.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="90"/>
-        <CursorPos X="52" Y="95"/>
-        <UsageCount Value="84"/>
+        <TopLine Value="22"/>
+        <CursorPos Y="208"/>
+        <FoldState Value=" T3N0r3 pjHkZ0JG"/>
+        <UsageCount Value="87"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
@@ -51,7 +54,8 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="2"/>
         <CursorPos Y="16"/>
-        <UsageCount Value="50"/>
+        <FoldState Value=" T3J0Q011 Pi9S0k"/>
+        <UsageCount Value="53"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
@@ -60,7 +64,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="45"/>
         <CursorPos X="30" Y="26"/>
-        <UsageCount Value="24"/>
+        <UsageCount Value="23"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -68,14 +72,14 @@
         <UnitName Value="Server"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="20" Y="8"/>
-        <UsageCount Value="28"/>
+        <UsageCount Value="27"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="Download.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="29" Y="14"/>
-        <UsageCount Value="28"/>
+        <UsageCount Value="27"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -83,19 +87,19 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="930"/>
         <CursorPos X="14" Y="951"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
       </Unit>
       <Unit>
         <Filename Value="..\..\..\..\Development\Lazarus\fpc\3.2.2\source\rtl\objpas\sysutils\filutilh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="179"/>
         <CursorPos X="10" Y="200"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
       </Unit>
       <Unit>
         <Filename Value="..\OpenWF Launcher v2\Project.dproj"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
         <DefaultSyntaxHighlighter Value="None"/>
       </Unit>
       <Unit>
@@ -104,14 +108,14 @@
         <WindowIndex Value="-1"/>
         <TopLine Value="-1"/>
         <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="14"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
         <Filename Value="UnTerminal.pas"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="64" Y="9"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="14"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -121,7 +125,7 @@
         <TopLine Value="342"/>
         <CursorPos X="4" Y="351"/>
         <FoldState Value=" T3pM65H"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="17"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -129,14 +133,14 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="3989"/>
         <CursorPos Y="4010"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
       </Unit>
       <Unit>
         <Filename Value="menuitemhint.pas"/>
         <UnitName Value="MenuItemHint"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="40" Y="12"/>
-        <UsageCount Value="19"/>
+        <UsageCount Value="18"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -145,35 +149,11 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos Y="10"/>
-        <UsageCount Value="19"/>
+        <UsageCount Value="18"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="136" Column="124" TopLine="115"/>
-      </Position>
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="55" Column="46" TopLine="35"/>
-      </Position>
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="57" Column="46" TopLine="36"/>
-      </Position>
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="440" Column="57" TopLine="333"/>
-      </Position>
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="86" Column="33" TopLine="60"/>
-      </Position>
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="442" Column="52" TopLine="336"/>
-      </Position>
       <Position>
         <Filename Value="Main.pas"/>
         <Caret Line="86" Column="41" TopLine="64"/>
@@ -269,6 +249,30 @@
       <Position>
         <Filename Value="Main.pas"/>
         <Caret Line="43" TopLine="23"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="125" Column="79" TopLine="112"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="248" TopLine="132"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="254" Column="31" TopLine="177"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="259" Column="32" TopLine="229"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="369" Column="11" TopLine="338"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="398" Column="56" TopLine="380"/>
       </Position>
     </JumpHistory>
     <RunParams>

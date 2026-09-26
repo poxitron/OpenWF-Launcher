@@ -14,6 +14,8 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
+    BitBtn_DetenerServidor: TBitBtn;
+    BitBtn_IniciarServidor: TBitBtn;
     Button_MenuTest: TButton;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
@@ -23,8 +25,6 @@ type
     ComboBox_DisponibleParaDescargar: TComboBox;
     Button_DescargarJuego: TButton;
     CheckBox_BorrarCache: TCheckBox;
-    Button_IniciarServidor: TButton;
-    Button_DetenerServidor: TButton;
     Memo_Servidor: TMemo;
     MenuItem_InstalarActualizarBootstrapper: TMenuItem;
     MenuItem_InstalarActualizarServidor: TMenuItem;
@@ -34,12 +34,14 @@ type
     Separator1: TMenuItem;
     Separator2: TMenuItem;
     StatusBar1: TStatusBar;
+    procedure BitBtn_DetenerServidorClick(Sender: TObject);
+    procedure BitBtn_IniciarServidorClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject);
     procedure Button_IniciarJuegoClick(Sender: TObject);
     procedure Button_DescargarJuegoClick(Sender: TObject);
-    procedure Button_IniciarServidorClick(Sender: TObject);
-    procedure Button_DetenerServidorClick(Sender: TObject);
+    //procedure Button_IniciarServidorClick(Sender: TObject);
+    //procedure Button_DetenerServidorClick(Sender: TObject);
     procedure Button_MenuTestClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarAplicacionesClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarBootstrapperClick(Sender: TObject);
@@ -60,8 +62,8 @@ private
 protected
   procedure Execute; override;
 public
-  property WhatButtonWasClicked: TButton read FButtonClicked write FButtonClicked;
-  property WhatMenuItemWasClicked: TMenuItem read FMenuItemClicked write FMenuItemClicked;
+  property ButtonClickedSignal: TButton read FButtonClicked write FButtonClicked;
+  property MenuItemClickedSignal: TMenuItem read FMenuItemClicked write FMenuItemClicked;
 end;
 
 
@@ -75,11 +77,13 @@ ServidorThread = class(TThread)
 private
   FButtonClicked: TButton;
   FMenuItemClicked: TMenuItem;
+  FBitBtnClicked: TBitBtn;
 protected
   procedure Execute; override;
 public
-  property WhatButtonWasClicked: TButton read FButtonClicked write FButtonClicked;
-  property WhatMenuItemWasClicked: TMenuItem read FMenuItemClicked write FMenuItemClicked;
+  property ButtonClickedSignal: TButton read FButtonClicked write FButtonClicked;
+  property MenuItemClickedSignal: TMenuItem read FMenuItemClicked write FMenuItemClicked;
+  property BitBtnClickedSignal: TBitBtn read FBitBtnClicked write FBitBtnClicked;
 end;
 
 
@@ -199,12 +203,12 @@ var
 begin
   AThread := JuegoThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.WhatButtonWasClicked := Sender as TButton; // "Envía" una señal al Thread para saber
+  AThread.ButtonClickedSignal := Sender as TButton; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   BThread := ServidorThread.Create(True);
   BThread.FreeOnTerminate := true;
-  BThread.WhatButtonWasClicked := Sender as TButton; // "Envía" una señal al Thread para saber
+  BThread.ButtonClickedSignal := Sender as TButton; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
@@ -225,7 +229,7 @@ var
 begin
   AThread := JuegoThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.WhatMenuItemWasClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
@@ -272,18 +276,38 @@ end;
 //====================//
 //      Servidor      //
 //====================//
-procedure TForm1.Button_IniciarServidorClick(Sender: TObject);
+//procedure TForm1.Button_IniciarServidorClick(Sender: TObject);
+//var
+//  AThread: ServidorThread;
+//begin
+//  AThread := ServidorThread.Create(True);
+//  AThread.FreeOnTerminate := true;
+//  AThread.ButtonClickedSignal := Sender as TButton; // "Envía" una señal al Thread para saber
+//                                                     // que se ha iniciado con este botón
+//  AThread.start;
+//end;
+//
+//procedure TForm1.Button_DetenerServidorClick(Sender: TObject);
+//begin
+//  try
+//    StopProcess('node.exe');
+//    except
+//      on E: Exception do
+//        ShowMessage('No ha sido posible detener el proceso: ' + E.Message);
+//    end;
+//end;
+procedure TForm1.BitBtn_IniciarServidorClick(Sender: TObject);
 var
   AThread: ServidorThread;
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.WhatButtonWasClicked := Sender as TButton; // "Envía" una señal al Thread para saber
+  AThread.BitBtnClickedSignal := Sender as TBitBtn; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.start;
 end;
 
-procedure TForm1.Button_DetenerServidorClick(Sender: TObject);
+procedure TForm1.BitBtn_DetenerServidorClick(Sender: TObject);
 begin
   try
     StopProcess('node.exe');
@@ -299,7 +323,7 @@ var
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := True;
-  AThread.WhatMenuItemWasClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.Start;
 end;
@@ -310,12 +334,10 @@ var
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.WhatMenuItemWasClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.Start;
 end;
-
-
 
 
 
@@ -335,7 +357,7 @@ begin
 
     Form1.Button_MenuTest.Enabled := False;
     Form1.Button_IniciarJuego.Enabled := False;
-    Form1.Button_IniciarServidor.Enabled := False;
+    //Form1.Button_IniciarServidor.Enabled := False;
     Form1.Button_DescargarJuego.Enabled := False;
 
     Sleep(3000); // Esperar unos segundos para que al servidor le de tiempo a iniciarse
@@ -349,7 +371,7 @@ begin
 
     Form1.Button_MenuTest.Enabled := True;
     Form1.Button_IniciarJuego.Enabled := True;
-    Form1.Button_IniciarServidor.Enabled := True;
+    //Form1.Button_IniciarServidor.Enabled := True;
     Form1.Button_DescargarJuego.Enabled := True;
   end
   else
@@ -425,13 +447,13 @@ var
   WorkingDir: string;
 begin
   { Iniciar el servidor }
-  if (FButtonClicked = Form1.Button_IniciarServidor) or (FButtonClicked = Form1.Button_IniciarJuego) then
+  if (FBitBtnClicked = Form1.BitBtn_IniciarServidor) or (FButtonClicked = Form1.Button_IniciarJuego) then
   begin
     Form1.Memo_Servidor.Clear;
 
-    Form1.Button_MenuTest.Enabled := False;
-    Form1.Button_IniciarServidor.Enabled := False;
-    Form1.Button_DetenerServidor.Enabled := True;
+    //Form1.Button_MenuTest.Enabled := False;
+    Form1.BitBtn_IniciarServidor.Enabled := False;
+    Form1.BitBtn_DetenerServidor.Enabled := True;
 
     Parametros := Format('"%s" "%s" run raw', [NodejsPath, NpmCliPath]);
     WorkingDir := SpaceNinjaServerPath;
@@ -444,9 +466,9 @@ begin
         MessageDlg('Error al iniciar el servidor: ' + E.Message, mtError, [mbOK], 0);
     end;
 
-    Form1.Button_MenuTest.Enabled := True;
-    Form1.Button_IniciarServidor.Enabled := True;
-    Form1.Button_DetenerServidor.Enabled := False;
+    //Form1.Button_MenuTest.Enabled := True;
+    Form1.BitBtn_IniciarServidor.Enabled := True;
+    Form1.BitBtn_DetenerServidor.Enabled := False;
 
   end
   else

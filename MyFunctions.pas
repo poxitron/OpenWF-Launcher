@@ -1,9 +1,3 @@
-{
-        File: MyFunctions.pas
-        License: GPLv3
-}
-
-
 unit MyFunctions;
 
 interface
@@ -11,15 +5,15 @@ interface
 uses
  LCLIntf, LCLType, LMessages,  jwatlhelp32, windows, Messages, SysUtils, Variants, Classes, Graphics,
  Controls, Forms, Dialogs, StdCtrls, ExtCtrls, ComCtrls, INIFiles, Process, ShellApi,
- laz2_DOM, laz2_XMLRead, laz2_XMLUtils, LazUTF8, FileUtil, LazFileUtils, Math;
+ DOM, XMLRead, XMLUtils, LazUTF8, FileUtil, LazFileUtils, Math;
 
 
 function ExecNewProcess(ProgramName: String; WorkingDir: String; Memo: TMemo): Integer;
 function StopProcess(ExeFileName: string) : Integer;
 function AskAppToClose(const sCapt: PChar): boolean;  // Close applications by the window name
-procedure KillProcess(ProcessName: String); // The 'name' parameter must be the process name, as shown in the task manager.
 function DeleteDirectoryRecursively(const ADirectory: String): Boolean; // Eliminar todos los archivos y carpetas de forma recursiva
-function StringListSortCompare(List: TStringList; Index1, Index2: Integer): Integer; // Will sort in reverse order
+function StringListSortCompare(List: TStringList; Index1, Index2: Integer): Integer; // Sort the list in descending order
+procedure DrawRounded(Control: TWinControl);
 
 implementation
 
@@ -77,9 +71,9 @@ function StopProcess(ExeFileName: string) : Integer;
 const
   PROCESS_TERMINATE = $0001;
 var
-  ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
   FProcessEntry32: TProcessEntry32;
+  ContinueLoop: BOOL;
 begin
   Result := 0;
   FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -87,42 +81,13 @@ begin
   ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
   while Integer(ContinueLoop) <> 0 do
   begin
-    if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) =
-      UpperCase(ExeFileName)) or (UpperCase(FProcessEntry32.szExeFile) =
-      UpperCase(ExeFileName))) then
-      Result := Integer(TerminateProcess(
-                        OpenProcess(PROCESS_TERMINATE,
-                                    BOOL(0),
-                                    FProcessEntry32.th32ProcessID),
-                                    0));
-     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+    if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) = UpperCase(ExeFileName))
+       or (UpperCase(FProcessEntry32.szExeFile) = UpperCase(ExeFileName))) then
+         Result := Integer(TerminateProcess(OpenProcess(PROCESS_TERMINATE, BOOL(0),FProcessEntry32.th32ProcessID), 0));
+    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
   CloseHandle(FSnapshotHandle);
 end;
-
-procedure KillProcess(ProcessName: String);
-var h:tHandle;
-    pe:tProcessEntry32;
-    sPrcName:string;
-begin
-  h:=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  try
-    pe.dwSize:=SizeOf(pe);
-    if Process32First(h,pe) then begin
-      while Process32Next(h,pe) do
-      begin
-        sPrcName:=pe.szExeFile;
-        if pos(LowerCase(ProcessName),LowerCase(sPrcName))>0 then
-        begin
-          TerminateProcess(OpenProcess(Process_Terminate, False, pe.th32ProcessID), 0);
-        end;
-      end;
-    end
-    else RaiseLastOSError;
-  finally
-  end;
-end;
-
 
 function AskAppToClose(const sCapt: PChar): boolean;
 var AppHandle: THandle;
@@ -130,7 +95,6 @@ begin
   AppHandle:=FindWindow(Nil, sCapt);
   Result:=PostMessage(AppHandle, WM_QUIT, 0, 0);
 end;
-
 
 function DeleteDirectoryRecursively(const ADirectory: String): Boolean;
 
@@ -199,10 +163,28 @@ begin
   Result := DeleteDirectory(ADirectory, False);
 end;
 
-
 function StringListSortCompare(List: TStringList; Index1, Index2: Integer): Integer;
 begin
   Result := AnsiCompareText(List[Index2], List[Index1]);
+end;
+
+procedure DrawRounded(Control: TWinControl);
+var
+   R: TRect;
+   Rgn: HRGN;
+begin
+   with Control do
+   begin
+     R := ClientRect;
+     rgn := CreateRoundRectRgn(R.Left, R.Top, R.Right, R.Bottom, 20, 20) ;
+     Perform(EM_GETRECT, 0, lParam(@r)) ;
+     InflateRect(r, - 4, - 4) ;
+     Perform(EM_SETRECTNP, 0, lParam(@r)) ;
+     SetWindowRgn(Handle, rgn, True) ;
+     Invalidate;
+   end;
+{ Example:
+  DrawRounded(Button1); }
 end;
 
 end.

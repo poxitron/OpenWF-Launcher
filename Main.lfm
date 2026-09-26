@@ -201,24 +201,32 @@ object Form1: TForm1
     Width = 25
     Anchors = [akTop, akRight]
     Caption = '...'
+    ParentShowHint = False
     TabOrder = 4
-    Visible = False
     OnClick = Button_MenuTestClick
   end
   object PopupMenu_Test: TPopupMenu
     Left = 80
     Top = 320
     object MenuItem_InstalarActualizarBootstrapper: TMenuItem
-      Caption = 'Instalar/Actualizar el Bootstrapper'
+      Caption = 'Instalar el Bootstrapper'
+      Hint = 'Instala la última versión del bootstrapper en el juego seleccionado.'
+    end
+    object Separator1: TMenuItem
+      Caption = '-'
     end
     object MenuItem_RecargarXml: TMenuItem
       Caption = 'Recargar manifest.xml'
+    end
+    object Separator2: TMenuItem
+      Caption = '-'
     end
     object MenuItem_InstalarActualizarServidor: TMenuItem
       Caption = 'Instalar/Actualizar el Servidor'
     end
     object MenuItem_InstalarActualizarAplicaciones: TMenuItem
       Caption = 'Instalar/Actualizar Mango'
+      OnClick = MenuItem_InstalarActualizarAplicacionesClick
     end
   end
 end

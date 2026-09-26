@@ -4,7 +4,7 @@ program Project;
 
 uses
   Forms, Interfaces,
-  Main in 'Main.pas', MyFunctions, Procedures;
+  Main in 'Main.pas', MyFunctions, Procedures, XmlManager;
 
 {$R *.res}
 

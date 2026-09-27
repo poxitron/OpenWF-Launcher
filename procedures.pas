@@ -6,7 +6,7 @@ interface
 
 uses
   LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, FileUtil;
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, FileUtil, IniFiles;
 
 procedure DescargarInstalarBootstrapper;
 procedure InstalarActualizarServidor;
@@ -14,6 +14,8 @@ procedure InstalarActualizarLibraryDependencies;
 procedure DescargarActualizarStrippedAssets;
 procedure DescargarActualizarMango;
 procedure AddInstalledGamesToComboBox(const Dest: TStrings; DescendingSort: Boolean);
+procedure SaveINIFile;
+procedure LoadINIFile;
 
 implementation
 
@@ -237,6 +239,43 @@ begin
     AddInstalledGamesToComboBox(ComboBox_Instalado.Items); }
 end;
 
+procedure SaveINIFile;
+var
+  INI: TIniFile;
+begin
+  try
+    INI := TINIFile.Create(RutaEjecutable + '\config.ini');
+
+    INI.WriteInteger('Window', 'Top', Form1.Top);
+    INI.WriteInteger('Window', 'Left', Form1.Left);
+    INI.WriteInteger('Window', 'Width', Form1.Width);
+    INI.WriteInteger('Window', 'Height', Form1.Height);
+    INI.WriteBool('Options', 'DeleteCache', Form1.CheckBox_BorrarCache.Checked);
+    INI.WriteInteger('Options', 'LastPlayed', Form1.ComboBox_Instalado.ItemIndex);
+
+  finally
+    INI.Free;
+  end;
+end;
+
+procedure LoadINIFile;
+var
+  INI: TIniFile;
+begin
+  try
+    INI := TINIFile.Create(RutaEjecutable + '\config.ini');
+
+    Form1.Top := INI.ReadInteger('Window', 'Top', Screen.DesktopHeight div 2 - 260);
+    Form1.Left := INI.ReadInteger('Window', 'Left', Screen.DesktopWidth div 2 - 250);
+    Form1.Width := INI.ReadInteger('Window', 'Width', 480);
+    Form1.Height := INI.ReadInteger('Window', 'Height', 480);
+    Form1.CheckBox_BorrarCache.Checked := INI.ReadBool('Options', 'DeleteCache', True);
+    Form1.ComboBox_Instalado.ItemIndex := INI.ReadInteger('Options', 'LastPlayed', -1);
+  finally
+    INI.Free;
+  end;
+
+end;
 
 end.
 

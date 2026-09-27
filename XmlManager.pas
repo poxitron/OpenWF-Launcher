@@ -9,7 +9,7 @@ uses
   Dialogs, StdCtrls, ExtCtrls, ComCtrls, Buttons, Menus, INIFiles, LazFileUtils,
   DOM, XMLRead, XMLUtils, LazUTF8, FileUtil, XPath;
 
-procedure GetXMLNodeValues(xmlDoc: TXMLDocument; NodeName: string; const Dest: TStrings);        // Devuelve el valor de todos los nodos del manifes.xml que coinciden con NodeName y los añade a Dest}
+procedure GetXMLNodeValues(NodeName: string; const Dest: TStrings; xmlDoc: TXMLDocument);        // Devuelve el valor de todos los nodos del manifes.xml que coinciden con NodeName y los añade a Dest}
 function GetBuildInfo(const FindThisValue, GetThisValue: string; xmlDoc: TXMLDocument): string;  // Busca en el manifest.xml un valor y devuelve otro valor de esa build
 
 implementation
@@ -17,7 +17,7 @@ implementation
 uses
   Main;
 
-procedure GetXMLNodeValues(xmlDoc: TXMLDocument; NodeName: string; const Dest: TStrings);
+procedure GetXMLNodeValues(NodeName: string; const Dest: TStrings; xmlDoc: TXMLDocument);
 
   procedure SearchNode(Node: TDOMNode);
   var

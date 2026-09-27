@@ -41,8 +41,6 @@ type
     procedure FormClose(Sender: TObject);
     procedure Button_IniciarJuegoClick(Sender: TObject);
     procedure Button_DescargarJuegoClick(Sender: TObject);
-    //procedure Button_IniciarServidorClick(Sender: TObject);
-    //procedure Button_DetenerServidorClick(Sender: TObject);
     procedure Button_MenuTestClick(Sender: TObject);
     procedure MenuItem_DesinstalarJuegoClick(Sender: TObject);
     procedure MenuItem_InstalarActualizarAplicacionesClick(Sender: TObject);
@@ -91,7 +89,6 @@ end;
 
 var
   Form1: TForm1;
-  INI: TINIFile;
   XMLDocument1: TXMLDocument;
   RutaEjecutable: String;
   GitPath: String;
@@ -114,28 +111,27 @@ uses
 {$R *.lfm}
 
 
-{ #todo 5 -cGeneral : Mover "procedure TForm1.MenuItem_DesinstalarJuegoClick" al hilo JuegoThread }
+{ #todo 5 -cGeneral : Añadir un botón para cancelar las descargas del juego (detener el hilo y matar los procesos) }
 { #todo 5 -cGeneral : Guardar las URL de descargas en un archivo .ini
 - Si en un futuro cambian, se podrán editar y la aplicación seguirá funcionando.}
-{ #todo -cGeneral : Guardar en un achivo .ini algunas opciones:
-- El último juego jugado
-- El Checkbox para borrar la caché }
-{ #todo 1 -cOptimización : Ver si puedo definir algunas variables como constantes.}
 { #todo 5 -cGeneral : Añadir comprobaciones:
 - Antes de descargar un acrhivo.
 - Comprobar que Warframe.x64.exe existe antes de iniciar Warframe.}
- { #todo 1 -cGeneral : Añadir al tbsDropDown los hint}
-
  { #todo 2 -cGeneral : ¿Añadir la versión de Warframe a los ComboBox y ordenarlos por versión? }
  { #todo -cGeneral : Descargar Git y Node.js al iniciar la aplicación para disminuir el tamaño de cara a su distribución }
 
- { #done -cGeneral : Añadir la posibilidad de eliminar los juegos instalado. }
+ { #done 5 -cGeneral : Mover "procedure TForm1.MenuItem_DesinstalarJuegoClick" al hilo JuegoThread }
+ { #done -cGeneral : Añadir la posibilidad de eliminar los juegos instalado }
  { #done -cOptimización : Mover los procedimientos a la unida 'Procedures' }
  { #done 1 -cGeneral : Añadir un Tbutton con un tbsDropDown para incluir:
- - Instalar servidor, instalar Mango, recargar xml, etc.}
+ - Instalar servidor, instalar Mango, recargar xml, etc }
+ { #done -cGeneral : Guardar en un achivo .ini algunas opciones:
+ - El último juego jugado
+ - El Checkbox para borrar la caché }
 
 procedure TForm1.FormClose(Sender: TObject);
 begin
+  SaveINIFile;
   FreeAndNil(XMLDocument1);
 end;
 
@@ -161,13 +157,15 @@ begin
     ReadXMLFile(XMLDocument1, RutaEjecutable + '\manifest.xml');
     AddInstalledGamesToComboBox(ComboBox_Instalado.Items, True);
 
-    if Form1.ComboBox_Instalado.Items.Count > 0 then
-        Form1.ComboBox_Instalado.ItemIndex := 0
-      else
-        Form1.ComboBox_Instalado.ItemIndex := -1;
+    LoadINIFile;
+
+    //if Form1.ComboBox_Instalado.Items.Count > 0 then
+    //    Form1.ComboBox_Instalado.ItemIndex := 0
+    //  else
+    //    Form1.ComboBox_Instalado.ItemIndex := -1;
 
     { Añade al menú "Disponible para descargar" los juegos listados en el manifes.xml }
-    GetXMLNodeValues(XMLDocument1, 'title', ComboBox_DisponibleParaDescargar.Items);
+    GetXMLNodeValues('title', ComboBox_DisponibleParaDescargar.Items, XMLDocument1);
 
     if ComboBox_DisponibleParaDescargar.Items.Count > 0 then
         ComboBox_DisponibleParaDescargar.ItemIndex := 0
@@ -245,26 +243,16 @@ end;
 
 procedure TForm1.MenuItem_DesinstalarJuegoClick(Sender: TObject);
 var
-  s: String;
+  AThread: JuegoThread;
 begin
-  Button_IniciarJuego.Enabled := False;
-  Button_DescargarJuego.Enabled := False;
-  try
-    s := GetBuildInfo(ComboBox_Instalado.Text, 'manifest', XMLDocument1);
-    DeleteDirectoryRecursively(RutaEjecutable + GameInstallPath + s);
+  AThread := JuegoThread.Create(True);
+  AThread.FreeOnTerminate := true;
+  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+                                                      // que se ha iniciado con este botón
 
-    ComboBox_Instalado.Clear;
-    AddInstalledGamesToComboBox(ComboBox_Instalado.Items, True);
-
-    if ComboBox_DisponibleParaDescargar.Items.Count > 0 then
-        ComboBox_DisponibleParaDescargar.ItemIndex := 0
-      else
-        ComboBox_DisponibleParaDescargar.ItemIndex := -1;
-  finally
-  end;
-  Button_IniciarJuego.Enabled := True;
-  Button_DescargarJuego.Enabled := True;
+  AThread.Start;
 end;
+
 
 
 //=================//
@@ -287,7 +275,7 @@ begin
     ComboBox_DisponibleParaDescargar.Items.Clear;
 
     { Añade al menú "Disponible para descargar" los juegos listados en el manifes.xml }
-    GetXMLNodeValues(XMLDocument1, 'title', ComboBox_DisponibleParaDescargar.Items);
+    GetXMLNodeValues('title', ComboBox_DisponibleParaDescargar.Items, XMLDocument1);
 
     if ComboBox_DisponibleParaDescargar.Items.Count > 0 then
         ComboBox_DisponibleParaDescargar.ItemIndex := 0
@@ -415,6 +403,27 @@ begin
     Form1.Button_IniciarJuego.Enabled := True;
     Form1.Button_DescargarJuego.Enabled := True;
   end;
+
+  if FMenuItemClicked = Form1.MenuItem_DesinstalarJuego then
+  begin
+    Form1.Button_IniciarJuego.Enabled := False;
+    Form1.Button_DescargarJuego.Enabled := False;
+    try
+      s := GetBuildInfo(Form1.ComboBox_Instalado.Text, 'manifest', XMLDocument1);
+      DeleteDirectoryRecursively(RutaEjecutable + GameInstallPath + s);
+
+      Form1.ComboBox_Instalado.Clear;
+      AddInstalledGamesToComboBox(Form1.ComboBox_Instalado.Items, True);
+
+      //if Form1.ComboBox_DisponibleParaDescargar.Items.Count > 0 then
+      //    Form1.ComboBox_DisponibleParaDescargar.ItemIndex := 0
+      //  else
+      //    Form1.ComboBox_DisponibleParaDescargar.ItemIndex := -1;
+    finally
+    end;
+    Form1.Button_IniciarJuego.Enabled := True;
+    Form1.Button_DescargarJuego.Enabled := True;
+  end;
 end;
 
 procedure DescargasThread.Execute;
@@ -454,10 +463,10 @@ begin
     Form1.ComboBox_Instalado.Items.Clear;
     AddInstalledGamesToComboBox(Form1.ComboBox_Instalado.Items, True);
 
-    if Form1.ComboBox_Instalado.Items.Count > 0 then
-        Form1.ComboBox_Instalado.ItemIndex := 0
-      else
-        Form1.ComboBox_Instalado.ItemIndex := -1;
+    //if Form1.ComboBox_Instalado.Items.Count > 0 then
+    //    Form1.ComboBox_Instalado.ItemIndex := 0
+    //  else
+    //    Form1.ComboBox_Instalado.ItemIndex := -1;
 
     except
       on E: Exception do

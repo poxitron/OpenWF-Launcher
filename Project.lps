@@ -10,7 +10,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="18"/>
-        <UsageCount Value="193"/>
+        <UsageCount Value="198"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
       <Unit>
@@ -20,10 +20,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="200"/>
-        <CursorPos X="48" Y="341"/>
-        <FoldState Value=" T3k80g6 pj0kS094]9Ok50q1 PiSiB0f"/>
-        <UsageCount Value="193"/>
+        <TopLine Value="195"/>
+        <CursorPos X="67" Y="273"/>
+        <FoldState Value=" T3k4044 pj1jL0A116]Bdl50;1 PiSiN0y"/>
+        <UsageCount Value="198"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
@@ -31,18 +31,18 @@
         <Filename Value="MyFunctions.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="3"/>
-        <CursorPos X="70" Y="190"/>
-        <FoldState Value=" T3K0l312 PjOkL0D"/>
-        <UsageCount Value="163"/>
+        <CursorPos Y="100"/>
+        <FoldState Value=" T3L0l412 Pk1l00D"/>
+        <UsageCount Value="168"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="Procedures.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="1"/>
-        <CursorPos Y="261"/>
+        <CursorPos Y="211"/>
         <FoldState Value=" T3P0r3 pjHkZ0J3 PiKiS0h"/>
-        <UsageCount Value="95"/>
+        <UsageCount Value="100"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -51,7 +51,7 @@
         <EditorIndex Value="2"/>
         <CursorPos X="90" Y="20"/>
         <FoldState Value=" T3J0Q011 Pi9S0k"/>
-        <UsageCount Value="61"/>
+        <UsageCount Value="66"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -147,64 +147,15 @@
         <UsageCount Value="18"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit>
+      <Unit>
+        <Filename Value="..\..\..\..\Development\Lazarus\lcl\interfaces\win32\win32memostrings.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="40"/>
+        <CursorPos Y="61"/>
+        <UsageCount Value="10"/>
+      </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
-      <Position>
-        <Filename Value="Main.pas"/>
-        <Caret Line="28" Column="13" TopLine="8"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="81" Column="34" TopLine="65"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="91" Column="26" TopLine="65"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="94" Column="94" TopLine="65"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="95" Column="106" TopLine="65"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="96" Column="86" TopLine="65"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="97" Column="109" TopLine="65"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="104" Column="26" TopLine="69"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="107" Column="112" TopLine="72"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="136" Column="22" TopLine="101"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="137" Column="22" TopLine="102"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="140" Column="63" TopLine="105"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="162" Column="24" TopLine="127"/>
-      </Position>
-      <Position>
-        <Filename Value="Procedures.pas"/>
-        <Caret Line="163" Column="24" TopLine="128"/>
-      </Position>
       <Position>
         <Filename Value="Procedures.pas"/>
         <Caret Line="166" Column="63" TopLine="131"/>
@@ -268,6 +219,62 @@
       <Position>
         <Filename Value="Main.pas"/>
         <Caret Line="415" Column="44" TopLine="388"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="454" Column="41" TopLine="436"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="457" Column="9" TopLine="432"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="266" TopLine="192"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="268" TopLine="194"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="271" Column="7" TopLine="226"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="67" Column="28" TopLine="47"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="68" Column="30" TopLine="48"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="86" Column="28" TopLine="60"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="87" Column="30" TopLine="60"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="88" Column="28" TopLine="60"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="350" TopLine="118"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="272" Column="31" TopLine="252"/>
+      </Position>
+      <Position>
+        <Filename Value="MyFunctions.pas"/>
+        <Caret Line="87" Column="51" TopLine="10"/>
+      </Position>
+      <Position>
+        <Filename Value="Main.pas"/>
+        <Caret Line="272" Column="62" TopLine="195"/>
       </Position>
     </JumpHistory>
     <RunParams>

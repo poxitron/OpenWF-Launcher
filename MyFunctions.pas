@@ -11,6 +11,7 @@ uses
 function ExecNewProcess(ProgramName: String; WorkingDir: String; Memo: TMemo): Integer;
 function StopProcess(ExeFileName: string) : Integer;
 function AskAppToClose(const sCapt: PChar): boolean;  // Close applications by the window name
+function GetProcessPID(ExeFileName: string) : Integer;
 function DeleteDirectoryRecursively(const ADirectory: String): Boolean; // Eliminar todos los archivos y carpetas de forma recursiva
 function StringListDescendingSort(List: TStringList; Index1, Index2: Integer): Integer; // Sort the list in descending order
 procedure DrawRounded(Control: TWinControl);
@@ -94,6 +95,28 @@ var AppHandle: THandle;
 begin
   AppHandle:=FindWindow(Nil, sCapt);
   Result:=PostMessage(AppHandle, WM_QUIT, 0, 0);
+end;
+
+function GetProcessPID(ExeFileName: string) : Integer;
+const
+  PROCESS_TERMINATE = $0001;
+var
+  FSnapshotHandle: THandle;
+  FProcessEntry32: TProcessEntry32;
+  ContinueLoop: BOOL;
+begin
+  Result := 0;
+  FSnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  FProcessEntry32.dwSize := SizeOf(FProcessEntry32);
+  ContinueLoop := Process32First(FSnapshotHandle, FProcessEntry32);
+  while Integer(ContinueLoop) <> 0 do
+  begin
+    if ((UpperCase(ExtractFileName(FProcessEntry32.szExeFile)) = UpperCase(ExeFileName))
+       or (UpperCase(FProcessEntry32.szExeFile) = UpperCase(ExeFileName))) then
+       Result := Integer(FProcessEntry32.th32ProcessID);
+    ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
+  end;
+  CloseHandle(FSnapshotHandle);
 end;
 
 function DeleteDirectoryRecursively(const ADirectory: String): Boolean;

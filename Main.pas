@@ -16,6 +16,7 @@ type
   TForm1 = class(TForm)
     BitBtn_DetenerServidor: TBitBtn;
     BitBtn_IniciarServidor: TBitBtn;
+    Button_CancelarDescarga: TButton;
     Button_MenuTest: TButton;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
@@ -37,6 +38,7 @@ type
     StatusBar1: TStatusBar;
     procedure BitBtn_DetenerServidorClick(Sender: TObject);
     procedure BitBtn_IniciarServidorClick(Sender: TObject);
+    procedure Button_CancelarDescargaClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject);
     procedure Button_IniciarJuegoClick(Sender: TObject);
@@ -62,8 +64,8 @@ private
 protected
   procedure Execute; override;
 public
-  property ButtonClickedSignal: TButton read FButtonClicked write FButtonClicked;
-  property MenuItemClickedSignal: TMenuItem read FMenuItemClicked write FMenuItemClicked;
+  property GetButtonClicked: TButton read FButtonClicked write FButtonClicked;
+  property GetMenuItemClicked: TMenuItem read FMenuItemClicked write FMenuItemClicked;
 end;
 
 
@@ -81,9 +83,9 @@ private
 protected
   procedure Execute; override;
 public
-  property ButtonClickedSignal: TButton read FButtonClicked write FButtonClicked;
-  property MenuItemClickedSignal: TMenuItem read FMenuItemClicked write FMenuItemClicked;
-  property BitBtnClickedSignal: TBitBtn read FBitBtnClicked write FBitBtnClicked;
+  property GetButtonClicked: TButton read FButtonClicked write FButtonClicked;
+  property GetMenuItemClicked: TMenuItem read FMenuItemClicked write FMenuItemClicked;
+  property GetBitBtnClicked: TBitBtn read FBitBtnClicked write FBitBtnClicked;
 end;
 
 
@@ -159,11 +161,6 @@ begin
 
     LoadINIFile;
 
-    //if Form1.ComboBox_Instalado.Items.Count > 0 then
-    //    Form1.ComboBox_Instalado.ItemIndex := 0
-    //  else
-    //    Form1.ComboBox_Instalado.ItemIndex := -1;
-
     { Añade al menú "Disponible para descargar" los juegos listados en el manifes.xml }
     GetXMLNodeValues('title', ComboBox_DisponibleParaDescargar.Items, XMLDocument1);
 
@@ -206,12 +203,12 @@ var
 begin
   AThread := JuegoThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.ButtonClickedSignal := Sender as TButton; // "Envía" una señal al Thread para saber
+  AThread.GetButtonClicked := Sender as TButton; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   BThread := ServidorThread.Create(True);
   BThread.FreeOnTerminate := true;
-  BThread.ButtonClickedSignal := Sender as TButton; // "Envía" una señal al Thread para saber
+  BThread.GetButtonClicked := Sender as TButton; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
@@ -232,7 +229,7 @@ var
 begin
   AThread := JuegoThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.GetMenuItemClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   { Obtiene el Manifest del juego seleccionado }
@@ -247,7 +244,7 @@ var
 begin
   AThread := JuegoThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.GetMenuItemClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                       // que se ha iniciado con este botón
 
   AThread.Start;
@@ -266,6 +263,18 @@ begin
   AThread.FreeOnTerminate := true;
 
   AThread.Start;
+end;
+
+procedure TForm1.Button_CancelarDescargaClick(Sender: TObject);
+begin
+  try
+    //IntToStr(StopProcess('node.exe'));
+    //ExecNewProcess('taskkill /f /im node.exe', RutaEjecutable + '\nodejs', Form1.Memo_Servidor);
+    ExecNewProcess('taskkill /f /t /pid ' + IntToStr(GetProcessPID('node.exe')), RutaEjecutable + '\nodejs', Form1.Memo_Servidor);
+    except
+      on E: Exception do
+        ShowMessage('No ha sido posible detener el proceso: ' + E.Message);
+    end;
 end;
 
 procedure TForm1.MenuItem_RecargarXmlClick(Sender: TObject);
@@ -298,7 +307,7 @@ var
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.BitBtnClickedSignal := Sender as TBitBtn; // "Envía" una señal al Thread para saber
+  AThread.GetBitBtnClicked := Sender as TBitBtn; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.start;
 end;
@@ -319,7 +328,7 @@ var
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := True;
-  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.GetMenuItemClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.Start;
 end;
@@ -330,7 +339,7 @@ var
 begin
   AThread := ServidorThread.Create(True);
   AThread.FreeOnTerminate := true;
-  AThread.MenuItemClickedSignal := Sender as TMenuItem; // "Envía" una señal al Thread para saber
+  AThread.GetMenuItemClicked := Sender as TMenuItem; // "Envía" una señal al Thread para saber
                                                      // que se ha iniciado con este botón
   AThread.Start;
 end;
@@ -361,7 +370,7 @@ begin
       ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
     except
       on E: Exception do
-        MessageDlg('Error al iniciar el servidor: ' + E.Message, mtError, [mbOK], 0);
+        MessageDlg('Error al iniciar el juego: ' + E.Message, mtError, [mbOK], 0);
     end;
     StopProcess('node.exe');
 
@@ -384,6 +393,7 @@ begin
     Form1.Button_IniciarJuego.Enabled := True;
   end;
 
+  { Desinstalar un juego }
   if FMenuItemClicked = Form1.MenuItem_DesinstalarJuego then
   begin
     Form1.Button_IniciarJuego.Enabled := False;
@@ -403,33 +413,14 @@ begin
     Form1.Button_IniciarJuego.Enabled := True;
     Form1.Button_DescargarJuego.Enabled := True;
   end;
-
-  if FMenuItemClicked = Form1.MenuItem_DesinstalarJuego then
-  begin
-    Form1.Button_IniciarJuego.Enabled := False;
-    Form1.Button_DescargarJuego.Enabled := False;
-    try
-      s := GetBuildInfo(Form1.ComboBox_Instalado.Text, 'manifest', XMLDocument1);
-      DeleteDirectoryRecursively(RutaEjecutable + GameInstallPath + s);
-
-      Form1.ComboBox_Instalado.Clear;
-      AddInstalledGamesToComboBox(Form1.ComboBox_Instalado.Items, True);
-
-      //if Form1.ComboBox_DisponibleParaDescargar.Items.Count > 0 then
-      //    Form1.ComboBox_DisponibleParaDescargar.ItemIndex := 0
-      //  else
-      //    Form1.ComboBox_DisponibleParaDescargar.ItemIndex := -1;
-    finally
-    end;
-    Form1.Button_IniciarJuego.Enabled := True;
-    Form1.Button_DescargarJuego.Enabled := True;
-  end;
 end;
 
 procedure DescargasThread.Execute;
 var
   Parametros: string;
   WorkingDir: string;
+  ExitCode: Integer;
+  res: TModalResult;
 begin
   Form1.Memo_Servidor.Clear;
   Form1.Button_DescargarJuego.Enabled := False;
@@ -446,38 +437,48 @@ begin
   { Descarga el juego seleccionado }
   try
     ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
-    Form1.StatusBar1.SimpleText := '';
+    ExitCode := ExecNewProcess(Parametros, WorkingDir, Form1.Memo_Servidor);
+    //ShowMessage(IntToStr(ExitCode));
+
+    { Si se cancela la descarga }
+    if ExitCode > 0 then
+      begin
+        Form1.Memo_Servidor.Lines.Add('');
+        Form1.Memo_Servidor.Lines.Add('||======== Descarga cancelada ========||');
+
+        res := QuestionDlg('Descarga cancelada', 'La descarga se ha cancelado debido a un error en la descarga o por acción del usuario.' + sLineBreak + sLineBreak + '¿Desea eliminar la descarga incompleta?', mtConfirmation, [mrYes, mrNo], 0);
+        case res of
+          mrYes: DeleteDirectoryRecursively(RutaEjecutable + GameInstallPath + ManifestID);
+        end;
+
+        Form1.Button_DescargarJuego.Enabled := True;
+        Form1.CheckBox_BorrarCache.Enabled := True;
+        Form1.MenuItem_InstalarActualizarAplicaciones.Enabled := True;
+        Form1.StatusBar1.SimpleText := '';
+        Exit;
+      end;
 
     if Form1.CheckBox_BorrarCache.Checked = true then
     begin
       Form1.StatusBar1.SimpleText := 'Elimiando la caché de archivos descargados...';
       DeleteDirectoryRecursively(RutaEjecutable + GameDownloadCachePath);
-      Form1.StatusBar1.SimpleText := '';
     end;
 	  
-    { Descarga e instala el bootstrapper }
     DescargarInstalarBootstrapper;
-    //DescargarBootstrapper;
-    //InstalarBootstrapper(ManifestID);
 
     Form1.ComboBox_Instalado.Items.Clear;
     AddInstalledGamesToComboBox(Form1.ComboBox_Instalado.Items, True);
-
-    //if Form1.ComboBox_Instalado.Items.Count > 0 then
-    //    Form1.ComboBox_Instalado.ItemIndex := 0
-    //  else
-    //    Form1.ComboBox_Instalado.ItemIndex := -1;
 
     except
       on E: Exception do
       begin
         MessageDlg('Ha ocurrido un error al descargar Warframe: ' + E.Message, mtError, [mbOK], 0);
-        Form1.StatusBar1.SimpleText := '';
       end;
     end;
     Form1.Button_DescargarJuego.Enabled := True;
     Form1.CheckBox_BorrarCache.Enabled := True;
     Form1.MenuItem_InstalarActualizarAplicaciones.Enabled := True;
+    Form1.StatusBar1.SimpleText := '';
 end;
 
 procedure ServidorThread.Execute;

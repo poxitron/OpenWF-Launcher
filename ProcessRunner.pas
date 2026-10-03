@@ -7,7 +7,7 @@ uses
   Windows,
   SysUtils,
   Classes,
-  SyncObjs;
+  SyncObjs, Main;
 
 type
   TProcessOutputKind = (
@@ -319,10 +319,7 @@ begin
   TThread.Queue(nil, procedure
     begin
       if Assigned(Runner) then
-        Runner.DoOutput(
-          Kind,
-          S
-        );
+        Runner.DoOutput(Kind, S);
     end
   );
 end;
